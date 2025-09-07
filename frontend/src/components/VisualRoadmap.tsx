@@ -172,7 +172,7 @@ export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: numb
       const childIsLocked = isLocked || node.status !== 'completed';
       const nextLevel = level + 1;
       
-      // Размещаем дочерние узлы вертикально вниз с адаптивным расстоянием
+ую то г      // Размещаем дочерние узлы вертикально вниз с адаптивным расстоянием
       const childSpacing = Math.max(120, Math.min(180, 250 / Math.max(1, node.children.length - 1)));
       const verticalSpacing = Math.max(150, Math.min(200, 300 / Math.max(1, level + 1)));
       node.children.forEach((child, index) => {

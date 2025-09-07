@@ -27,7 +27,7 @@ FROM python:3.11-slim as production
 RUN adduser --disabled-password --gecos '' appuser
 
 # Копируем виртуальное окружение из builder stage
-COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /root/.cache/pypoetry/virtualenvs /app/.venv
 
 # Копируем код приложения
 COPY --chown=appuser:appuser . /app

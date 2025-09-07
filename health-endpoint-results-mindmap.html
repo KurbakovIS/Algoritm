@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>Markmap</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+#mindmap {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+.markmap-dark {
+  background: #27272a;
+  color: white;
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/style.css">
+</head>
+<body>
+<svg id="mindmap"></svg>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/index.js"></script><script>((r) => {
+          setTimeout(r);
+        })(() => {
+  const { markmap, mm } = window;
+  const toolbar = new markmap.Toolbar();
+  toolbar.attach(mm);
+  const el = toolbar.render();
+  el.setAttribute("style", "position:absolute;bottom:20px;right:20px");
+  document.body.append(el);
+})</script><script>((getMarkmap, getOptions, root2, jsonOptions) => {
+              const markmap = getMarkmap();
+              window.mm = markmap.Markmap.create(
+                "svg#mindmap",
+                (getOptions || markmap.deriveOptions)(jsonOptions),
+                root2
+              );
+              if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                document.documentElement.classList.add("markmap-dark");
+              }
+            })(() => window.markmap,null,{"content":"&#x420;&#x435;&#x437;&#x443;&#x43b;&#x44c;&#x442;&#x430;&#x442;&#x44b; &#x434;&#x43e;&#x431;&#x430;&#x432;&#x43b;&#x435;&#x43d;&#x438;&#x44f; health endpoint","children":[{"content":"&#x41f;&#x440;&#x43e;&#x431;&#x43b;&#x435;&#x43c;&#x430;","children":[{"content":"&#x41e;&#x442;&#x441;&#x443;&#x442;&#x441;&#x442;&#x432;&#x43e;&#x432;&#x430;&#x43b; endpoint /health &#x434;&#x43b;&#x44f; &#x43c;&#x43e;&#x43d;&#x438;&#x442;&#x43e;&#x440;&#x438;&#x43d;&#x433;&#x430;","children":[],"payload":{"tag":"li","lines":"3,4"}},{"content":"Docker health check &#x43d;&#x435; &#x440;&#x430;&#x431;&#x43e;&#x442;&#x430;&#x43b; &#x43a;&#x43e;&#x440;&#x440;&#x435;&#x43a;&#x442;&#x43d;&#x43e;","children":[],"payload":{"tag":"li","lines":"4,5"}},{"content":"&#x41d;&#x435;&#x432;&#x43e;&#x437;&#x43c;&#x43e;&#x436;&#x43d;&#x43e; &#x431;&#x44b;&#x43b;&#x43e; &#x43f;&#x440;&#x43e;&#x432;&#x435;&#x440;&#x438;&#x442;&#x44c; &#x441;&#x43e;&#x441;&#x442;&#x43e;&#x44f;&#x43d;&#x438;&#x435; backend","children":[],"payload":{"tag":"li","lines":"5,7"}}],"payload":{"tag":"h2","lines":"2,3"}},{"content":"&#x420;&#x435;&#x448;&#x435;&#x43d;&#x438;&#x435;","children":[{"content":"1. &#x414;&#x43e;&#x431;&#x430;&#x432;&#x43b;&#x435;&#x43d; health endpoint","children":[{"content":"GET /health &#x432; main.py","children":[],"payload":{"tag":"li","lines":"9,10"}},{"content":"&#x41f;&#x440;&#x43e;&#x432;&#x435;&#x440;&#x43a;&#x430; &#x43f;&#x43e;&#x434;&#x43a;&#x43b;&#x44e;&#x447;&#x435;&#x43d;&#x438;&#x44f; &#x43a; PostgreSQL","children":[],"payload":{"tag":"li","lines":"10,11"}},{"content":"&#x412;&#x43e;&#x437;&#x432;&#x440;&#x430;&#x442; &#x441;&#x442;&#x430;&#x442;&#x443;&#x441;&#x430; healthy/unhealthy","children":[],"payload":{"tag":"li","lines":"11,12"}},{"content":"&#x414;&#x435;&#x442;&#x430;&#x43b;&#x44c;&#x43d;&#x430;&#x44f; &#x438;&#x43d;&#x444;&#x43e;&#x440;&#x43c;&#x430;&#x446;&#x438;&#x44f; &#x43e; &#x441;&#x435;&#x440;&#x432;&#x438;&#x441;&#x435;","children":[],"payload":{"tag":"li","lines":"12,14"}}],"payload":{"tag":"h3","lines":"8,9"}},{"content":"2. &#x424;&#x443;&#x43d;&#x43a;&#x446;&#x438;&#x43e;&#x43d;&#x430;&#x43b;&#x44c;&#x43d;&#x43e;&#x441;&#x442;&#x44c;","children":[{"content":"&#x41f;&#x440;&#x43e;&#x432;&#x435;&#x440;&#x43a;&#x430; &#x411;&#x414; &#x447;&#x435;&#x440;&#x435;&#x437; SQL &#x437;&#x430;&#x43f;&#x440;&#x43e;&#x441; SELECT 1","children":[],"payload":{"tag":"li","lines":"15,16"}},{"content":"&#x418;&#x43d;&#x444;&#x43e;&#x440;&#x43c;&#x430;&#x446;&#x438;&#x44f; &#x43e; &#x441;&#x435;&#x440;&#x432;&#x438;&#x441;&#x435;, &#x432;&#x435;&#x440;&#x441;&#x438;&#x438;, &#x432;&#x440;&#x435;&#x43c;&#x435;&#x43d;&#x43d;&#x43e;&#x439; &#x43c;&#x435;&#x442;&#x43a;&#x435;","children":[],"payload":{"tag":"li","lines":"16,17"}},{"content":"HTTP 503 &#x43f;&#x440;&#x438; &#x43e;&#x448;&#x438;&#x431;&#x43a;&#x430;&#x445; &#x441; &#x434;&#x435;&#x442;&#x430;&#x43b;&#x44c;&#x43d;&#x44b;&#x43c; &#x43e;&#x43f;&#x438;&#x441;&#x430;&#x43d;&#x438;&#x435;&#x43c;","children":[],"payload":{"tag":"li","lines":"17,18"}},{"content":"ISO 8601 &#x444;&#x43e;&#x440;&#x43c;&#x430;&#x442; &#x432;&#x440;&#x435;&#x43c;&#x435;&#x43d;&#x43d;&#x44b;&#x445; &#x43c;&#x435;&#x442;&#x43e;&#x43a;","children":[],"payload":{"tag":"li","lines":"18,20"}}],"payload":{"tag":"h3","lines":"14,15"}},{"content":"3. Docker &#x438;&#x43d;&#x442;&#x435;&#x433;&#x440;&#x430;&#x446;&#x438;&#x44f;","children":[{"content":"&#x418;&#x441;&#x43f;&#x440;&#x430;&#x432;&#x43b;&#x435;&#x43d; health check &#x432; Dockerfile","children":[],"payload":{"tag":"li","lines":"21,22"}},{"content":"&#x41e;&#x431;&#x43d;&#x43e;&#x432;&#x43b;&#x435;&#x43d; health check &#x432; docker-compose.yml","children":[],"payload":{"tag":"li","lines":"22,23"}},{"content":"&#x418;&#x441;&#x43f;&#x43e;&#x43b;&#x44c;&#x437;&#x43e;&#x432;&#x430;&#x43d;&#x438;&#x435; curl &#x432;&#x43c;&#x435;&#x441;&#x442;&#x43e; requests","children":[],"payload":{"tag":"li","lines":"23,24"}},{"content":"&#x412;&#x441;&#x435; &#x43a;&#x43e;&#x43d;&#x442;&#x435;&#x439;&#x43d;&#x435;&#x440;&#x44b; &#x43f;&#x440;&#x43e;&#x445;&#x43e;&#x434;&#x44f;&#x442; health check","children":[],"payload":{"tag":"li","lines":"24,26"}}],"payload":{"tag":"h3","lines":"20,21"}}],"payload":{"tag":"h2","lines":"7,8"}},{"content":"&#x422;&#x435;&#x445;&#x43d;&#x438;&#x447;&#x435;&#x441;&#x43a;&#x438;&#x435; &#x434;&#x435;&#x442;&#x430;&#x43b;&#x438;","children":[{"content":"Health Endpoint","children":[{"content":"Endpoint: GET /health","children":[],"payload":{"tag":"li","lines":"28,29"}},{"content":"&#x41f;&#x440;&#x43e;&#x432;&#x435;&#x440;&#x43a;&#x430; &#x411;&#x414;: SQL &#x437;&#x430;&#x43f;&#x440;&#x43e;&#x441; SELECT 1","children":[],"payload":{"tag":"li","lines":"29,30"}},{"content":"&#x41e;&#x431;&#x440;&#x430;&#x431;&#x43e;&#x442;&#x43a;&#x430; &#x43e;&#x448;&#x438;&#x431;&#x43e;&#x43a;: HTTP 503","children":[],"payload":{"tag":"li","lines":"30,31"}},{"content":"&#x412;&#x440;&#x435;&#x43c;&#x435;&#x43d;&#x43d;&#x430;&#x44f; &#x43c;&#x435;&#x442;&#x43a;&#x430;: ISO 8601 UTC","children":[],"payload":{"tag":"li","lines":"31,33"}}],"payload":{"tag":"h3","lines":"27,28"}},{"content":"Docker Health Check","children":[{"content":"&#x41a;&#x43e;&#x43c;&#x430;&#x43d;&#x434;&#x430;: curl -f http://localhost:8000/health","children":[],"payload":{"tag":"li","lines":"34,35"}},{"content":"&#x418;&#x43d;&#x442;&#x435;&#x440;&#x432;&#x430;&#x43b;: 30 &#x441;&#x435;&#x43a;&#x443;&#x43d;&#x434;","children":[],"payload":{"tag":"li","lines":"35,36"}},{"content":"&#x422;&#x430;&#x439;&#x43c;&#x430;&#x443;&#x442;: 10 &#x441;&#x435;&#x43a;&#x443;&#x43d;&#x434;","children":[],"payload":{"tag":"li","lines":"36,37"}},{"content":"&#x41f;&#x43e;&#x432;&#x442;&#x43e;&#x440;&#x44b;: 3 &#x440;&#x430;&#x437;&#x430;","children":[],"payload":{"tag":"li","lines":"37,39"}}],"payload":{"tag":"h3","lines":"33,34"}}],"payload":{"tag":"h2","lines":"26,27"}},{"content":"&#x420;&#x435;&#x437;&#x443;&#x43b;&#x44c;&#x442;&#x430;&#x442;&#x44b;","children":[{"content":"Health endpoint: 100%","children":[],"payload":{"tag":"li","lines":"40,41"}},{"content":"Docker health check: 100%","children":[],"payload":{"tag":"li","lines":"41,42"}},{"content":"&#x41c;&#x43e;&#x43d;&#x438;&#x442;&#x43e;&#x440;&#x438;&#x43d;&#x433; &#x433;&#x43e;&#x442;&#x43e;&#x432;&#x43d;&#x43e;&#x441;&#x442;&#x44c;: 100%","children":[],"payload":{"tag":"li","lines":"42,43"}},{"content":"&#x421;&#x442;&#x430;&#x431;&#x438;&#x43b;&#x44c;&#x43d;&#x43e;&#x441;&#x442;&#x44c; &#x43a;&#x43e;&#x43d;&#x442;&#x435;&#x439;&#x43d;&#x435;&#x440;&#x43e;&#x432;: 100%","children":[],"payload":{"tag":"li","lines":"43,44"}},{"content":"&#x413;&#x43e;&#x442;&#x43e;&#x432;&#x43d;&#x43e;&#x441;&#x442;&#x44c; &#x43a; &#x43f;&#x440;&#x43e;&#x434;&#x430;&#x43a;&#x448;&#x435;&#x43d;&#x443;: 10/10","children":[],"payload":{"tag":"li","lines":"44,45"}}],"payload":{"tag":"h2","lines":"39,40"}}],"payload":{"tag":"h1","lines":"0,1"}},null)</script>
+</body>
+</html>

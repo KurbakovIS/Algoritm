@@ -419,3 +419,14 @@ def get_all_nodes_with_blocks(db: Session) -> List[schemas.RoadmapNodeOut]:
     """
     nodes = db.query(models.RoadmapNode).all()
     return [schemas.RoadmapNodeOut.model_validate(node) for node in nodes]
+
+
+def get_nodes_by_ids(db: Session, node_ids: List[int]) -> List[schemas.RoadmapNodeOut]:
+    """
+    Получение узлов по списку ID.
+    """
+    if not node_ids:
+        return []
+    
+    nodes = db.query(models.RoadmapNode).filter(models.RoadmapNode.id.in_(node_ids)).all()
+    return [schemas.RoadmapNodeOut.model_validate(node) for node in nodes]

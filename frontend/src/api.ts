@@ -113,6 +113,14 @@ export const Admin = {
   },
   deleteBlock(blockId: number) { 
     return api(`/admin/roadmap/blocks/${blockId}`, { method: 'DELETE' })
+  },
+  
+  // Загрузка узлов по ID
+  getNodesByIds(nodeIds: number[]) {
+    return api('/admin/roadmap/nodes/by-ids', { 
+      method: 'POST', 
+      body: JSON.stringify({ node_ids: nodeIds }) 
+    })
   }
 }
 
@@ -130,5 +138,6 @@ export const apiClient = {
   getAdminNodes: Admin.getNodes,
   createNode: Admin.createNode,
   updateNode: Admin.updateNode,
-  deleteNode: Admin.deleteNode
+  deleteNode: Admin.deleteNode,
+  getNodesByIds: Admin.getNodesByIds
 }

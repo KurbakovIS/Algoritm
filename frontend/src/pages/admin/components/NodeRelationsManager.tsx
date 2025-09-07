@@ -25,12 +25,46 @@ const NodeRelationsManager: React.FC<NodeRelationsManagerProps> = ({
   onBlockingNodeIdsChange
 }) => {
   const [availableNodes, setAvailableNodes] = useState<RoadmapNode[]>([]);
+  const [selectedNodes, setSelectedNodes] = useState<RoadmapNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [draggedNode, setDraggedNode] = useState<RoadmapNode | null>(null);
+  
+  // Состояние для фильтров
+  const [searchTerm, setSearchTerm] = useState('');
+  const [directionFilter, setDirectionFilter] = useState<string>('');
+  const [typeFilter, setTypeFilter] = useState<string>('');
 
   useEffect(() => {
     loadAvailableNodes();
+    loadSelectedNodes();
+    // Загружаем сохраненные фильтры
+    const savedFilters = localStorage.getItem('nodeRelationsFilters');
+    if (savedFilters) {
+      try {
+        const { search, direction, type } = JSON.parse(savedFilters);
+        setSearchTerm(search || '');
+        setDirectionFilter(direction || '');
+        setTypeFilter(type || '');
+      } catch (error) {
+        console.error('Ошибка загрузки фильтров:', error);
+      }
+    }
   }, []);
+
+  // Загружаем выбранные узлы при изменении parentIds или blockingNodeIds
+  useEffect(() => {
+    loadSelectedNodes();
+  }, [parentIds, blockingNodeIds]);
+
+  // Сохраняем фильтры в localStorage при изменении
+  useEffect(() => {
+    const filters = {
+      search: searchTerm,
+      direction: directionFilter,
+      type: typeFilter
+    };
+    localStorage.setItem('nodeRelationsFilters', JSON.stringify(filters));
+  }, [searchTerm, directionFilter, typeFilter]);
 
   const loadAvailableNodes = async () => {
     try {
@@ -48,6 +82,58 @@ const NodeRelationsManager: React.FC<NodeRelationsManagerProps> = ({
       setLoading(false);
     }
   };
+
+  const loadSelectedNodes = async () => {
+    try {
+      const allSelectedIds = [...parentIds, ...blockingNodeIds];
+      if (allSelectedIds.length === 0) {
+        setSelectedNodes([]);
+        return;
+      }
+      
+      const nodes = await apiClient.getNodesByIds(allSelectedIds);
+      setSelectedNodes(nodes);
+    } catch (error) {
+      console.error('Ошибка загрузки выбранных узлов:', error);
+      setSelectedNodes([]);
+    }
+  };
+
+  // Функция для фильтрации узлов
+  const getFilteredAvailableNodes = (excludeIds: number[]) => {
+    return availableNodes.filter(node => {
+      // Исключаем уже выбранные узлы
+      if (excludeIds.includes(node.id)) return false;
+      
+      // Фильтр по поисковому запросу
+      if (searchTerm && !node.title.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      
+      // Фильтр по направлению
+      if (directionFilter && node.direction !== directionFilter) {
+        return false;
+      }
+      
+      // Фильтр по типу
+      if (typeFilter && node.node_type !== typeFilter) {
+        return false;
+      }
+      
+      return true;
+    });
+  };
+
+  // Функция для сброса фильтров
+  const resetFilters = () => {
+    setSearchTerm('');
+    setDirectionFilter('');
+    setTypeFilter('');
+  };
+
+  // Получаем уникальные направления и типы для фильтров
+  const uniqueDirections = [...new Set(availableNodes.map(node => node.direction))];
+  const uniqueTypes = [...new Set(availableNodes.map(node => node.node_type))];
 
   const handleDragStart = (e: React.DragEvent, node: RoadmapNode) => {
     setDraggedNode(node);
@@ -86,11 +172,11 @@ const NodeRelationsManager: React.FC<NodeRelationsManagerProps> = ({
   };
 
   const getSelectedNodes = (ids: number[]) => {
-    return availableNodes.filter(node => ids.includes(node.id));
+    return selectedNodes.filter(node => ids.includes(node.id));
   };
 
   const getAvailableNodes = (excludeIds: number[]) => {
-    return availableNodes.filter(node => !excludeIds.includes(node.id));
+    return getFilteredAvailableNodes(excludeIds);
   };
 
   if (loading) {
@@ -113,12 +199,70 @@ const NodeRelationsManager: React.FC<NodeRelationsManagerProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Доступные узлы */}
         <div className="space-y-4">
-          <h4 className="font-semibold text-blue-400 flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-            </svg>
-            Доступные узлы
-          </h4>
+          <div className="flex items-center justify-between">
+            <h4 className="font-semibold text-blue-400 flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              Доступные узлы
+            </h4>
+            <span className="text-xs text-slate-400">
+              {getAvailableNodes([...parentIds, ...blockingNodeIds]).length} из {availableNodes.length}
+            </span>
+          </div>
+          
+          {/* Фильтры */}
+          <div className="space-y-3">
+            {/* Поиск */}
+            <div>
+              <input
+                type="text"
+                placeholder="Поиск по названию..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            
+            {/* Фильтры по направлению и типу */}
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={directionFilter}
+                onChange={(e) => setDirectionFilter(e.target.value)}
+                className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Все направления</option>
+                {uniqueDirections.map(direction => (
+                  <option key={direction} value={direction}>
+                    {direction}
+                  </option>
+                ))}
+              </select>
+              
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Все типы</option>
+                {uniqueTypes.map(type => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Кнопка сброса фильтров */}
+            {(searchTerm || directionFilter || typeFilter) && (
+              <button
+                onClick={resetFilters}
+                className="w-full px-3 py-2 bg-slate-600 hover:bg-slate-500 border border-slate-500 rounded-lg text-white text-sm transition-colors"
+              >
+                Сбросить фильтры
+              </button>
+            )}
+          </div>
           <div className="bg-slate-800 rounded-lg border border-slate-700 p-4 min-h-[400px]">
             {getAvailableNodes([...parentIds, ...blockingNodeIds]).map(node => (
               <div

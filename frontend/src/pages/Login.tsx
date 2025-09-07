@@ -8,18 +8,38 @@ export default function Login({ onSuccess }: { onSuccess: () => void }) {
   const [role, setRole] = useState('intern')
   const [mode, setMode] = useState<'login'|'register'>('login')
   const [err, setErr] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const { setUser } = useApp()
 
   async function submit() {
+    if (isLoading) return // Предотвращаем повторные отправки
+    
     try {
       setErr('')
+      setIsLoading(true)
       if (mode === 'register') await Auth.register(email, password, role)
       await Auth.login(email, password)
       const me = await Auth.me(); setUser(me)
       onSuccess()
     } catch (e: any) {
       setErr(e.message || 'Ошибка')
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  // Обработчик нажатия клавиш
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      submit()
+    }
+  }
+
+  // Обработчик отправки формы
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    submit()
   }
 
   return (
@@ -37,14 +57,17 @@ export default function Login({ onSuccess }: { onSuccess: () => void }) {
             {mode === 'login' ? 'Вход' : 'Регистрация'}
           </h2>
           
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-white mb-2">Электронная почта</label>
               <input 
                 className="modern-input w-full" 
                 placeholder="hero@example.com" 
                 value={email} 
-                onChange={e=>setEmail(e.target.value)} 
+                onChange={e=>setEmail(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading}
+                required
               />
             </div>
             
@@ -55,14 +78,22 @@ export default function Login({ onSuccess }: { onSuccess: () => void }) {
                 type="password" 
                 placeholder="••••••••" 
                 value={password} 
-                onChange={e=>setPassword(e.target.value)} 
+                onChange={e=>setPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading}
+                required
               />
             </div>
             
             {mode==='register' && (
               <div>
                 <label className="block text-sm font-medium text-white mb-2">Уровень</label>
-                <select className="modern-input w-full" value={role} onChange={e=>setRole(e.target.value)}>
+                <select 
+                  className="modern-input w-full" 
+                  value={role} 
+                  onChange={e=>setRole(e.target.value)}
+                  disabled={isLoading}
+                >
                   <option value="intern">Стажёр</option>
                   <option value="junior">Джуниор</option>
                   <option value="middle">Мидл</option>
@@ -79,21 +110,31 @@ export default function Login({ onSuccess }: { onSuccess: () => void }) {
             )}
             
             <button 
-              onClick={submit} 
-              className="modern-btn w-full py-3 text-lg"
+              type="submit"
+              disabled={isLoading}
+              className="modern-btn w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {mode==='login'?'Войти в академию':'Зарегистрироваться'}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {mode==='login'?'Вход...':'Регистрация...'}
+                </>
+              ) : (
+                mode==='login'?'Войти в академию':'Зарегистрироваться'
+              )}
             </button>
             
             <div className="text-center">
               <button 
+                type="button"
                 onClick={()=>setMode(mode==='login'?'register':'login')} 
-                className="text-white hover:text-gray-200 text-sm transition-colors"
+                className="text-white hover:text-gray-200 text-sm transition-colors disabled:opacity-50"
+                disabled={isLoading}
               >
                 {mode==='login'? 'Создать аккаунт' : 'Есть аккаунт? Войти'}
               </button>
             </div>
-          </div>
+          </form>
         </div>
 
         {/* Demo notice */}

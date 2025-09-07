@@ -21,6 +21,17 @@ def get_all_nodes_admin(db: Session = Depends(get_db)):
     return crud.get_all_nodes_with_blocks(db)
 
 
+@router.post("/nodes/by-ids", response_model=List[schemas.RoadmapNodeOut])
+def get_nodes_by_ids(node_ids: schemas.NodeIdsRequest, db: Session = Depends(get_db)):
+    """
+    Получение узлов по списку ID.
+    """
+    try:
+        return crud.get_nodes_by_ids(db, node_ids.node_ids)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/nodes", response_model=schemas.RoadmapNodeOut)
 def create_node_admin(node: schemas.RoadmapNodeCreate, db: Session = Depends(get_db)):
     """

@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from datetime import datetime
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from .db import Base, engine, SessionLocal
 from .models import *  # noqa: F401
 from .routers import auth as auth_router
@@ -51,4 +53,44 @@ app.include_router(admin_router.router)
 @app.get("/")
 def root():
     return {"status": "ok", "name": "Gamified Roadmap Platform"}
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring and load balancers"""
+    try:
+        # Проверяем подключение к базе данных
+        db = SessionLocal()
+        try:
+            # Выполняем простой запрос для проверки БД
+            db.execute(text("SELECT 1"))
+            db_status = "healthy"
+        except Exception as e:
+            db_status = f"unhealthy: {str(e)}"
+        finally:
+            db.close()
+        
+        # Определяем общий статус
+        overall_status = "healthy" if db_status == "healthy" else "unhealthy"
+        
+        return {
+            "status": overall_status,
+            "service": "gamified-roadmap-backend",
+            "version": "1.0.0",
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "checks": {
+                "database": db_status
+            }
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unhealthy",
+                "service": "gamified-roadmap-backend",
+                "version": "1.0.0",
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "error": str(e)
+            }
+        )
 

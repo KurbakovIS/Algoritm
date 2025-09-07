@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>Markmap</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+#mindmap {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+.markmap-dark {
+  background: #27272a;
+  color: white;
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/style.css">
+</head>
+<body>
+<svg id="mindmap"></svg>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/index.js"></script><script>((r) => {
+          setTimeout(r);
+        })(() => {
+  const { markmap, mm } = window;
+  const toolbar = new markmap.Toolbar();
+  toolbar.attach(mm);
+  const el = toolbar.render();
+  el.setAttribute("style", "position:absolute;bottom:20px;right:20px");
+  document.body.append(el);
+})</script><script>((getMarkmap, getOptions, root2, jsonOptions) => {
+              const markmap = getMarkmap();
+              window.mm = markmap.Markmap.create(
+                "svg#mindmap",
+                (getOptions || markmap.deriveOptions)(jsonOptions),
+                root2
+              );
+              if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                document.documentElement.classList.add("markmap-dark");
+              }
+            })(() => window.markmap,null,{"content":"&#x41f;&#x43b;&#x430;&#x43d; &#x438;&#x441;&#x43f;&#x440;&#x430;&#x432;&#x43b;&#x435;&#x43d;&#x438;&#x44f; RecursionError","children":[{"content":"&#x41f;&#x440;&#x43e;&#x431;&#x43b;&#x435;&#x43c;&#x430;","children":[{"content":"&#x426;&#x438;&#x43a;&#x43b;&#x438;&#x447;&#x435;&#x441;&#x43a;&#x438;&#x435; &#x441;&#x432;&#x44f;&#x437;&#x438; &#x432; &#x431;&#x430;&#x437;&#x435; &#x434;&#x430;&#x43d;&#x43d;&#x44b;&#x445; &#x43c;&#x435;&#x436;&#x434;&#x443; &#x443;&#x437;&#x43b;&#x430;&#x43c;&#x438; 7 &#x438; 8","children":[],"payload":{"tag":"li","lines":"3,4"}},{"content":"&#x411;&#x435;&#x441;&#x43a;&#x43e;&#x43d;&#x435;&#x447;&#x43d;&#x430;&#x44f; &#x440;&#x435;&#x43a;&#x443;&#x440;&#x441;&#x438;&#x44f; &#x432; &#x441;&#x445;&#x435;&#x43c;&#x435; RoadmapNodeOut.model_validate()","children":[],"payload":{"tag":"li","lines":"4,5"}},{"content":"RecursionError &#x43f;&#x440;&#x438; &#x441;&#x435;&#x440;&#x438;&#x430;&#x43b;&#x438;&#x437;&#x430;&#x446;&#x438;&#x438; JSON","children":[],"payload":{"tag":"li","lines":"5,7"}}],"payload":{"tag":"h2","lines":"2,3"}},{"content":"&#x420;&#x435;&#x448;&#x435;&#x43d;&#x438;&#x435;","children":[{"content":"1. &#x418;&#x441;&#x43f;&#x440;&#x430;&#x432;&#x43b;&#x435;&#x43d;&#x438;&#x435; &#x441;&#x445;&#x435;&#x43c;&#x44b; RoadmapNodeOut","children":[{"content":"&#x414;&#x43e;&#x431;&#x430;&#x432;&#x438;&#x442;&#x44c; &#x437;&#x430;&#x449;&#x438;&#x442;&#x443; &#x43e;&#x442; &#x446;&#x438;&#x43a;&#x43b;&#x438;&#x447;&#x435;&#x441;&#x43a;&#x438;&#x445; &#x441;&#x441;&#x44b;&#x43b;&#x43e;&#x43a;","children":[],"payload":{"tag":"li","lines":"10,11"}},{"content":"&#x418;&#x441;&#x43f;&#x43e;&#x43b;&#x44c;&#x437;&#x43e;&#x432;&#x430;&#x442;&#x44c; visited set &#x434;&#x43b;&#x44f; &#x43e;&#x442;&#x441;&#x43b;&#x435;&#x436;&#x438;&#x432;&#x430;&#x43d;&#x438;&#x44f; &#x43e;&#x431;&#x440;&#x430;&#x431;&#x43e;&#x442;&#x430;&#x43d;&#x43d;&#x44b;&#x445; &#x443;&#x437;&#x43b;&#x43e;&#x432;","children":[],"payload":{"tag":"li","lines":"11,12"}},{"content":"&#x41e;&#x433;&#x440;&#x430;&#x43d;&#x438;&#x447;&#x438;&#x442;&#x44c; &#x433;&#x43b;&#x443;&#x431;&#x438;&#x43d;&#x443; &#x440;&#x435;&#x43a;&#x443;&#x440;&#x441;&#x438;&#x438;","children":[],"payload":{"tag":"li","lines":"12,14"}}],"payload":{"tag":"h3","lines":"9,10"}},{"content":"2. &#x41e;&#x447;&#x438;&#x441;&#x442;&#x43a;&#x430; &#x431;&#x430;&#x437;&#x44b; &#x434;&#x430;&#x43d;&#x43d;&#x44b;&#x445;","children":[{"content":"&#x423;&#x434;&#x430;&#x43b;&#x438;&#x442;&#x44c; &#x446;&#x438;&#x43a;&#x43b;&#x438;&#x447;&#x435;&#x441;&#x43a;&#x438;&#x435; &#x441;&#x432;&#x44f;&#x437;&#x438; &#x43c;&#x435;&#x436;&#x434;&#x443; &#x443;&#x437;&#x43b;&#x430;&#x43c;&#x438; 7 &#x438; 8","children":[],"payload":{"tag":"li","lines":"15,16"}},{"content":"&#x41f;&#x440;&#x43e;&#x432;&#x435;&#x440;&#x438;&#x442;&#x44c; &#x434;&#x440;&#x443;&#x433;&#x438;&#x435; &#x432;&#x43e;&#x437;&#x43c;&#x43e;&#x436;&#x43d;&#x44b;&#x435; &#x446;&#x438;&#x43a;&#x43b;&#x44b;","children":[],"payload":{"tag":"li","lines":"16,18"}}],"payload":{"tag":"h3","lines":"14,15"}},{"content":"3. &#x423;&#x43b;&#x443;&#x447;&#x448;&#x435;&#x43d;&#x438;&#x435; &#x43c;&#x43e;&#x434;&#x435;&#x43b;&#x438; &#x434;&#x430;&#x43d;&#x43d;&#x44b;&#x445;","children":[{"content":"&#x414;&#x43e;&#x431;&#x430;&#x432;&#x438;&#x442;&#x44c; &#x432;&#x430;&#x43b;&#x438;&#x434;&#x430;&#x446;&#x438;&#x44e; &#x43d;&#x430; &#x443;&#x440;&#x43e;&#x432;&#x43d;&#x435; &#x43c;&#x43e;&#x434;&#x435;&#x43b;&#x438;","children":[],"payload":{"tag":"li","lines":"19,20"}},{"content":"&#x41f;&#x440;&#x435;&#x434;&#x43e;&#x442;&#x432;&#x440;&#x430;&#x442;&#x438;&#x442;&#x44c; &#x441;&#x43e;&#x437;&#x434;&#x430;&#x43d;&#x438;&#x435; &#x446;&#x438;&#x43a;&#x43b;&#x438;&#x447;&#x435;&#x441;&#x43a;&#x438;&#x445; &#x441;&#x432;&#x44f;&#x437;&#x435;&#x439;","children":[],"payload":{"tag":"li","lines":"20,22"}}],"payload":{"tag":"h3","lines":"18,19"}}],"payload":{"tag":"h2","lines":"7,8"}},{"content":"&#x428;&#x430;&#x433;&#x438; &#x440;&#x435;&#x430;&#x43b;&#x438;&#x437;&#x430;&#x446;&#x438;&#x438;","children":[{"content":"1. &#x418;&#x441;&#x43f;&#x440;&#x430;&#x432;&#x438;&#x442;&#x44c; &#x441;&#x445;&#x435;&#x43c;&#x443; RoadmapNodeOut","children":[],"payload":{"tag":"li","lines":"23,24","listIndex":1}},{"content":"2. &#x41e;&#x447;&#x438;&#x441;&#x442;&#x438;&#x442;&#x44c; &#x446;&#x438;&#x43a;&#x43b;&#x438;&#x447;&#x435;&#x441;&#x43a;&#x438;&#x435; &#x441;&#x432;&#x44f;&#x437;&#x438; &#x432; &#x411;&#x414;","children":[],"payload":{"tag":"li","lines":"24,25","listIndex":2}},{"content":"3. &#x41f;&#x440;&#x43e;&#x442;&#x435;&#x441;&#x442;&#x438;&#x440;&#x43e;&#x432;&#x430;&#x442;&#x44c; &#x438;&#x441;&#x43f;&#x440;&#x430;&#x432;&#x43b;&#x435;&#x43d;&#x438;&#x44f;","children":[],"payload":{"tag":"li","lines":"25,26","listIndex":3}},{"content":"4. &#x414;&#x43e;&#x431;&#x430;&#x432;&#x438;&#x442;&#x44c; &#x432;&#x430;&#x43b;&#x438;&#x434;&#x430;&#x446;&#x438;&#x44e;","children":[],"payload":{"tag":"li","lines":"26,27","listIndex":4}}],"payload":{"tag":"h2","lines":"22,23"}}],"payload":{"tag":"h1","lines":"0,1"}},null)</script>
+</body>
+</html>

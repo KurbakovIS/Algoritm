@@ -68,6 +68,32 @@ class RoadmapNodeOut(RoadmapNodeBase):
 
     @classmethod
     def model_validate(cls, obj, **kwargs):
+        # Get visited set from kwargs or create new one
+        visited = kwargs.get('visited', set())
+        max_depth = kwargs.get('max_depth', 10)
+        current_depth = kwargs.get('current_depth', 0)
+        
+        # Prevent infinite recursion - check before adding to visited
+        if obj.id in visited or current_depth >= max_depth:
+            return cls(
+                id=obj.id,
+                title=obj.title,
+                description=obj.description or "",
+                direction=obj.direction,
+                resources=[],
+                checkpoint=obj.checkpoint,
+                node_type=getattr(obj, 'node_type', 'task'),
+                is_required=getattr(obj, 'is_required', True),
+                order_index=getattr(obj, 'order_index', 0),
+                is_active=getattr(obj, 'is_active', True),
+                children=[],
+                blocked_by=[],
+                blocks=[]
+            )
+        
+        # Add current node to visited set BEFORE processing children
+        visited.add(obj.id)
+        
         # Convert JSON string resources to list
         import json
         if hasattr(obj, 'resources') and obj.resources:
@@ -90,7 +116,14 @@ class RoadmapNodeOut(RoadmapNodeBase):
             "is_required": getattr(obj, 'is_required', True),
             "order_index": getattr(obj, 'order_index', 0),
             "is_active": getattr(obj, 'is_active', True),
-            "children": [cls.model_validate(child) for child in obj.children] if hasattr(obj, 'children') else [],
+            "children": [
+                cls.model_validate(
+                    child, 
+                    visited=visited, 
+                    max_depth=max_depth, 
+                    current_depth=current_depth + 1
+                ) for child in obj.children
+            ] if hasattr(obj, 'children') else [],
             "blocked_by": [NodeBlockOut.model_validate(block) for block in obj.blocked_by] if hasattr(obj, 'blocked_by') else [],
             "blocks": [NodeBlockOut.model_validate(block) for block in obj.blocks] if hasattr(obj, 'blocks') else []
         }
@@ -172,3 +205,7 @@ class NodeBlockOut(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+
+class NodeIdsRequest(BaseModel):
+    node_ids: List[int]

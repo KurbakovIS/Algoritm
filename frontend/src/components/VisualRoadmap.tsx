@@ -33,7 +33,7 @@ const getAdventureIcon = (node: Node) => {
 };
 
 // --- Component ---
-export default function VisualRoadmap({ onOpen }: { onOpen: (id: number) => void }) {
+export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: number) => void, direction?: string }) {
   const [nodes, setNodes] = useState<NodeWithProgress[]>([]);
   const [selectedNode, setSelectedNode] = useState<PositionedNode | null>(null);
 
@@ -41,8 +41,16 @@ export default function VisualRoadmap({ onOpen }: { onOpen: (id: number) => void
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [roadmapTree, progress] = await Promise.all([Roadmap.getTree(), Progress.mine()]);
+        let roadmapData;
+        if (direction) {
+          // Загружаем только узлы для конкретного направления
+          roadmapData = await Roadmap.byDirection(direction);
+        } else {
+          // Загружаем все узлы
+          roadmapData = await Roadmap.getTree();
+        }
         
+        const progress = await Progress.mine();
         const progressMap = new Map(progress.map((p: any) => [p.node_id, p]));
 
         const enrichNodesWithProgress = (nodes: Node[]): NodeWithProgress[] => {
@@ -54,21 +62,21 @@ export default function VisualRoadmap({ onOpen }: { onOpen: (id: number) => void
           }));
         };
 
-        setNodes(enrichNodesWithProgress(roadmapTree));
+        setNodes(enrichNodesWithProgress(roadmapData));
 
       } catch (error) {
         console.error('Failed to load roadmap data:', error);
       }
     };
     loadData();
-  }, []);
+  }, [direction]);
 
-  // Positioning Logic
+  // Positioning Logic - улучшенный алгоритм без наложений
   const positionedNodes = useMemo(() => {
     if (nodes.length === 0) return [];
 
     const positioned = new Map<number, PositionedNode>();
-    const nodesToProcess: { node: NodeWithProgress; x: number; y: number; isLocked: boolean }[] = [];
+    const nodesToProcess: { node: NodeWithProgress; x: number; y: number; isLocked: boolean; level: number }[] = [];
 
     // Find root nodes (nodes that are not children of any other node)
     const allNodeIds = new Set<number>();
@@ -87,25 +95,52 @@ export default function VisualRoadmap({ onOpen }: { onOpen: (id: number) => void
     buildMap(nodes);
     const roots = rootIds.map(id => nodeMap.get(id)!).filter(Boolean);
 
+    // Размещаем корневые узлы горизонтально
     roots.forEach((root, index) => {
-      nodesToProcess.push({ node: root, x: (index - (roots.length - 1) / 2) * 400, y: 50, isLocked: false });
+      nodesToProcess.push({ node: root, x: (index - (roots.length - 1) / 2) * 300, y: 100, isLocked: false, level: 0 });
     });
 
     const visited = new Set<number>();
+    const levelPositions = new Map<number, number[]>(); // Отслеживаем позиции на каждом уровне
 
     while (nodesToProcess.length > 0) {
-      const { node, x, y, isLocked } = nodesToProcess.shift()!;
+      const { node, x, y, isLocked, level } = nodesToProcess.shift()!;
       if (visited.has(node.id)) continue;
       visited.add(node.id);
 
-      positioned.set(node.id, { ...node, x, y, isLocked });
+      // Проверяем наложения и корректируем позицию
+      let finalX = x;
+      let finalY = y;
+      
+      if (!levelPositions.has(level)) {
+        levelPositions.set(level, []);
+      }
+      
+      const existingPositions = levelPositions.get(level)!;
+      const minDistance = 120; // Минимальное расстояние между узлами
+      
+      // Ищем свободную позицию
+      let attempts = 0;
+      while (attempts < 10) {
+        const tooClose = existingPositions.some(pos => Math.abs(pos - finalX) < minDistance);
+        if (!tooClose) break;
+        finalX += minDistance;
+        attempts++;
+      }
+      
+      existingPositions.push(finalX);
+      levelPositions.set(level, existingPositions);
+
+      positioned.set(node.id, { ...node, x: finalX, y: finalY, isLocked });
 
       const childIsLocked = isLocked || node.status !== 'completed';
+      const nextLevel = level + 1;
+      
+      // Размещаем дочерние узлы вертикально вниз
       node.children.forEach((child, index) => {
-        const angle = (index / (node.children.length -1) || 0) * Math.PI * 0.6 - Math.PI * 0.3;
-        const newX = x + Math.sin(angle) * 250;
-        const newY = y + Math.cos(angle) * 150;
-        nodesToProcess.push({ node: child, x: newX, y: newY, isLocked: childIsLocked });
+        const childX = finalX + (index - (node.children.length - 1) / 2) * 150;
+        const childY = finalY + 200; // Фиксированное расстояние вниз
+        nodesToProcess.push({ node: child, x: childX, y: childY, isLocked: childIsLocked, level: nextLevel });
       });
     }
 
@@ -134,31 +169,39 @@ export default function VisualRoadmap({ onOpen }: { onOpen: (id: number) => void
   }, [positionedNodes]);
 
   // --- Render ---
-  // The rest of the component remains largely the same...
+  // Адаптивные размеры карты без скролла
   const mapDimensions = useMemo(() => {
-    if (positionedNodes.length === 0) return { width: 1200, height: 800, offsetX: 0, offsetY: 0 };
+    if (positionedNodes.length === 0) return { width: '100%', height: '100%', offsetX: 0, offsetY: 0 };
+    
     const xs = positionedNodes.map(n => n.x);
     const ys = positionedNodes.map(n => n.y);
     const minX = Math.min(...xs);
     const maxX = Math.max(...xs);
     const minY = Math.min(...ys);
     const maxY = Math.max(...ys);
+    
+    // Центрируем карту в контейнере
+    const contentWidth = maxX - minX + 200;
+    const contentHeight = maxY - minY + 200;
+    
     return {
-      width: maxX - minX + 300,
-      height: maxY - minY + 200,
-      offsetX: -minX + 150,
+      width: '100%',
+      height: '100%',
+      offsetX: -minX + 100,
       offsetY: -minY + 100,
+      contentWidth,
+      contentHeight
     };
   }, [positionedNodes]);
 
   return (
-    <div className="w-full h-[80vh] bg-slate-800/50 rounded-2xl border border-slate-700 overflow-auto p-4">
+    <div className="w-full h-[80vh] bg-slate-800/50 rounded-2xl border border-slate-700 overflow-hidden p-4">
       <div
-        className="relative transition-all duration-500"
+        className="relative transition-all duration-500 w-full h-full flex items-center justify-center"
         style={{ width: mapDimensions.width, height: mapDimensions.height }}
       >
         {/* SVG for connections */}
-        <svg className="absolute inset-0 w-full h-full" style={{ transform: `translate(${mapDimensions.offsetX}px, ${mapDimensions.offsetY}px)` }}>
+        <svg className="absolute inset-0 w-full h-full">
           <defs>
             <linearGradient id="path-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" style={{ stopColor: '#fde047', stopOpacity: 1 }} />
@@ -168,10 +211,10 @@ export default function VisualRoadmap({ onOpen }: { onOpen: (id: number) => void
           {connections.map((line, index) => (
             <line
               key={index}
-              x1={line.x1}
-              y1={line.y1}
-              x2={line.x2}
-              y2={line.y2}
+              x1={`calc(50% + ${line.x1 + mapDimensions.offsetX}px)`}
+              y1={`calc(50% + ${line.y1 + mapDimensions.offsetY}px)`}
+              x2={`calc(50% + ${line.x2 + mapDimensions.offsetX}px)`}
+              y2={`calc(50% + ${line.y2 + mapDimensions.offsetY}px)`}
               stroke={line.isCompleted ? "url(#path-gradient)" : "#4b5563"}
               strokeWidth="4"
               strokeDasharray={line.isCompleted ? "none" : "8 4"}
@@ -184,7 +227,10 @@ export default function VisualRoadmap({ onOpen }: { onOpen: (id: number) => void
           <div
             key={node.id}
             className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${!node.isLocked ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-            style={{ left: node.x + mapDimensions.offsetX, top: node.y + mapDimensions.offsetY }}
+            style={{ 
+              left: `calc(50% + ${node.x + mapDimensions.offsetX}px)`, 
+              top: `calc(50% + ${node.y + mapDimensions.offsetY}px)` 
+            }}
             onClick={() => !node.isLocked && setSelectedNode(node)}
           >
             <div className={`relative w-20 h-20 flex items-center justify-center rounded-full border-4 transition-all duration-300 ${node.isLocked ? 'border-gray-600 bg-gray-800' : 'border-amber-400 bg-slate-700 hover:bg-amber-500 hover:scale-110'}`}>

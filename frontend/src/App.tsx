@@ -14,6 +14,8 @@ function Shell() {
   const [direction, setDirection] = useState<string>('frontend')
   const [topicId, setTopicId] = useState<number | null>(null)
   const [profOpen, setProfOpen] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const [weather, setWeather] = useState<{temp: number, condition: string} | null>(null)
 
   useEffect(() => {
     if (!user) setView('home')
@@ -23,9 +25,29 @@ function Shell() {
     // Open profession selection on first login
     if (user) {
       const prof = localStorage.getItem('profession')
-      if (!prof) setProfOpen(true)
+      if (!prof) {
+        setProfOpen(true)
+      } else {
+        // Устанавливаем направление на основе профессии пользователя
+        setDirection(prof)
+      }
     }
   }, [user])
+
+  // Обновление времени каждую секунду
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Симуляция погоды (в реальном проекте можно подключить API)
+  useEffect(() => {
+    const conditions = ['☀️ Солнечно', '⛅ Облачно', '🌧️ Дождь', '❄️ Снег']
+    setWeather({
+      temp: Math.floor(Math.random() * 15) + 5,
+      condition: conditions[Math.floor(Math.random() * conditions.length)]
+    })
+  }, [])
 
   async function pickProfession(id: string) {
     try {
@@ -38,8 +60,8 @@ function Shell() {
       localStorage.setItem('profession', id)
     }
     
-    // Все профессии ведут к карьерному роадмапу
-    setDirection('career')
+    // Устанавливаем направление роадмапа в зависимости от профессии
+    setDirection(id)
     setProfOpen(false)
     setView('roadmap')
   }
@@ -71,12 +93,28 @@ function Shell() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button 
-                onClick={() => setView('dashboard')}
+                onClick={() => setView('home')}
                 className="text-2xl font-bold gradient-text hover:opacity-80 transition-opacity cursor-pointer"
               >
                 DevAcademy
               </button>
               <span className="text-white/60 text-sm">Портал развития разработчиков</span>
+              <div className="hidden md:flex items-center space-x-4 text-sm text-white/80 ml-6">
+                <div className="flex items-center space-x-2">
+                  <span>🕐</span>
+                  <span>{currentTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                {weather && (
+                  <div className="flex items-center space-x-2">
+                    <span>{weather.condition}</span>
+                    <span>{weather.temp}°C</span>
+                  </div>
+                )}
+                <div className="flex items-center space-x-2">
+                  <span>📅</span>
+                  <span>{currentTime.toLocaleDateString('ru-RU')}</span>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-3">
               <button 
@@ -90,12 +128,6 @@ function Shell() {
                 className="modern-btn px-4 py-2 text-sm"
               >
                 Роадмап
-              </button>
-              <button 
-                onClick={()=>setView('home')} 
-                className="glass px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors rounded-lg"
-              >
-                Главная
               </button>
               <button 
                 onClick={()=>setProfOpen(true)} 
@@ -116,7 +148,7 @@ function Shell() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
-        {view==='home' && <Home onLogin={() => setView('login')} />}
+        {view==='home' && <Home onLogin={() => setView('login')} isAuthenticated={true} />}
         {view==='dashboard' && <Dashboard onSelect={(dir)=>{ setDirection(dir); setView('roadmap') }} onChangeProfession={()=>setProfOpen(true)} />}
         {view==='roadmap' && <RoadmapPage direction={direction} onOpen={(id)=>{ setTopicId(id); setView('topic') }} />}
         {view==='topic' && topicId!=null && <Topic id={topicId} onBack={()=>setView('roadmap')} />}

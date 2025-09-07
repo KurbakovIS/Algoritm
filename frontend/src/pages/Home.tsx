@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Team, Corporate } from '../api'
 
-export default function Home({ onLogin }: { onLogin: () => void }) {
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [weather, setWeather] = useState<{temp: number, condition: string} | null>(null)
+export default function Home({ onLogin, isAuthenticated = false }: { onLogin: () => void, isAuthenticated?: boolean }) {
   const [teamStats, setTeamStats] = useState<{
     active_developers: number
     active_projects: number
@@ -18,20 +16,6 @@ export default function Home({ onLogin }: { onLogin: () => void }) {
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  // Симуляция погоды (в реальном проекте можно подключить API)
-  useEffect(() => {
-    const conditions = ['☀️ Солнечно', '⛅ Облачно', '🌧️ Дождь', '❄️ Снег']
-    setWeather({
-      temp: Math.floor(Math.random() * 15) + 5,
-      condition: conditions[Math.floor(Math.random() * conditions.length)]
-    })
-  }, [])
 
   // Загрузка данных с бэкенда
   useEffect(() => {
@@ -72,60 +56,40 @@ export default function Home({ onLogin }: { onLogin: () => void }) {
     loadData()
   }, [])
 
-  const getGreeting = () => {
-    const hour = currentTime.getHours()
-    if (hour < 12) return 'Доброе утро'
-    if (hour < 18) return 'Добрый день'
-    return 'Добрый вечер'
-  }
 
   return (
     <div className="min-h-screen">
-      {/* Header with Quick Info */}
-      <div className="glass border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div>
-                <h1 className="text-2xl font-bold gradient-text">DevAcademy</h1>
-                <p className="text-white/60 text-sm">Корпоративная платформа развития</p>
-              </div>
-              <div className="hidden md:flex items-center space-x-4 text-sm text-white/80">
-                <div className="flex items-center space-x-2">
-                  <span>🕐</span>
-                  <span>{currentTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-                {weather && (
-                  <div className="flex items-center space-x-2">
-                    <span>{weather.condition}</span>
-                    <span>{weather.temp}°C</span>
-                  </div>
-                )}
-                <div className="flex items-center space-x-2">
-                  <span>📅</span>
-                  <span>{currentTime.toLocaleDateString('ru-RU')}</span>
+      {/* Header with Logo and Login - только для неавторизованных */}
+      {!isAuthenticated && (
+        <div className="glass border-b border-white/20">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-6">
+                <div>
+                  <h1 className="text-2xl font-bold gradient-text">DevAcademy</h1>
+                  <p className="text-white/60 text-sm">Корпоративная платформа развития</p>
                 </div>
               </div>
+              <button 
+                onClick={onLogin}
+                className="modern-btn px-6 py-2 text-sm"
+              >
+                Войти в систему
+              </button>
             </div>
-            <button 
-              onClick={onLogin}
-              className="modern-btn px-6 py-2 text-sm"
-            >
-              Войти в систему
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="text-center">
             <h1 className="text-5xl font-bold gradient-text mb-4">
-              {getGreeting()}, разработчик!
+              Добро пожаловать в DevAcademy!
             </h1>
             <p className="text-xl text-white/80 mb-8 max-w-3xl mx-auto">
-              Добро пожаловать в корпоративную платформу развития DevAcademy. 
+              Корпоративная платформа развития разработчиков. 
               Здесь вы найдете все необходимое для профессионального роста и успешной интеграции в команду.
             </p>
           </div>
@@ -382,12 +346,6 @@ export default function Home({ onLogin }: { onLogin: () => void }) {
           <p className="text-lg text-white/80 mb-6">
             Войдите в систему, чтобы получить доступ к полному функционалу платформы
           </p>
-          <button 
-            onClick={onLogin}
-            className="modern-btn px-8 py-3 text-lg"
-          >
-            Войти в DevAcademy
-          </button>
         </div>
       </div>
     </div>

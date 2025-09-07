@@ -60,7 +60,7 @@ export default function RoadmapPage({ direction, onOpen }: { direction: string, 
           Следуйте по пути от начинающего разработчика до эксперта
         </p>
       </div>
-      <RoadmapMap nodes={nodes} onOpen={onOpen} />
+      <RoadmapMap nodes={nodes} onOpen={onOpen} direction={direction} />
     </div>
   )
 }

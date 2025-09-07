@@ -84,6 +84,17 @@ const QuestNode = ({
         fill="rgba(255, 255, 255, 0.3)"
       />
       
+      {/* Fantasy shield design */}
+      <path
+        d={`M ${x - radius * 0.3} ${y - radius * 0.2} 
+            L ${x + radius * 0.3} ${y - radius * 0.2}
+            L ${x + radius * 0.2} ${y + radius * 0.2}
+            L ${x - radius * 0.2} ${y + radius * 0.2} Z`}
+        fill="rgba(255, 255, 255, 0.2)"
+        stroke="#ffd700"
+        strokeWidth="1"
+      />
+      
       {/* Node number */}
       <text
         x={x}
@@ -101,15 +112,26 @@ const QuestNode = ({
       {status === 'completed' && (
         <g>
           {[0, 1, 2].map(i => (
-            <text
-              key={i}
-              x={x - 15 + i * 15}
-              y={y - radius - 15}
-              fontSize="16"
-              fill="#ffd700"
-            >
-              ★
-            </text>
+            <g key={i}>
+              {/* Star shadow */}
+              <text
+                x={x - 15 + i * 15 + 1}
+                y={y - radius - 15 + 1}
+                fontSize="16"
+                fill="rgba(0, 0, 0, 0.3)"
+              >
+                ★
+              </text>
+              {/* Star */}
+              <text
+                x={x - 15 + i * 15}
+                y={y - radius - 15}
+                fontSize="16"
+                fill="#ffd700"
+              >
+                ★
+              </text>
+            </g>
           ))}
         </g>
       )}
@@ -117,31 +139,67 @@ const QuestNode = ({
       {status === 'in_progress' && (
         <g>
           {[0, 1].map(i => (
-            <text
-              key={i}
-              x={x - 7.5 + i * 15}
-              y={y - radius - 15}
-              fontSize="16"
-              fill="#ffd700"
-            >
-              ★
-            </text>
+            <g key={i}>
+              {/* Star shadow */}
+              <text
+                x={x - 7.5 + i * 15 + 1}
+                y={y - radius - 15 + 1}
+                fontSize="16"
+                fill="rgba(0, 0, 0, 0.3)"
+              >
+                ★
+              </text>
+              {/* Star */}
+              <text
+                x={x - 7.5 + i * 15}
+                y={y - radius - 15}
+                fontSize="16"
+                fill="#ffd700"
+              >
+                ★
+              </text>
+            </g>
           ))}
         </g>
       )}
       
       {/* Checkpoint gem */}
       {checkpoint && (
-        <text
-          x={x}
-          y={y - radius - 35}
-          textAnchor="middle"
-          fontSize="20"
-          fill="#00bfff"
-        >
-          💎
-        </text>
+        <g>
+          {/* Gem shadow */}
+          <text
+            x={x + 1}
+            y={y - radius - 35 + 1}
+            textAnchor="middle"
+            fontSize="20"
+            fill="rgba(0, 0, 0, 0.3)"
+          >
+            💎
+          </text>
+          {/* Gem */}
+          <text
+            x={x}
+            y={y - radius - 35}
+            textAnchor="middle"
+            fontSize="20"
+            fill="#00bfff"
+          >
+            💎
+          </text>
+        </g>
       )}
+      
+      {/* Quest type icon */}
+      <text
+        x={x}
+        y={y + radius + 20}
+        textAnchor="middle"
+        fontSize="14"
+        fill="#8b4513"
+        fontWeight="bold"
+      >
+        {isMainNode ? '🏰' : '⚔️'}
+      </text>
     </g>
   );
 };
@@ -193,105 +251,259 @@ const WindingPath = ({ points }: { points: { x: number; y: number }[] }) => {
   );
 };
 
-const ForestBackground = ({ width, height }: { width: number; height: number }) => {
-  const trees = [];
+const MiddleEarthBackground = ({ width, height }: { width: number; height: number }) => {
+  const elements = [];
   
-  // Generate random trees
-  for (let i = 0; i < 150; i++) {
-    const x = Math.random() * width;
-    const y = Math.random() * height;
-    const size = Math.random() * 15 + 5;
+  // Generate mountain ranges
+  const mountainRanges = [
+    { startX: 0, startY: height * 0.3, endX: width * 0.4, endY: height * 0.2 },
+    { startX: width * 0.6, startY: height * 0.1, endX: width, endY: height * 0.3 },
+    { startX: width * 0.2, startY: height * 0.7, endX: width * 0.8, endY: height * 0.6 }
+  ];
+  
+  mountainRanges.forEach((range, rangeIndex) => {
+    const mountainCount = 8;
+    for (let i = 0; i < mountainCount; i++) {
+      const t = i / (mountainCount - 1);
+      const x = range.startX + (range.endX - range.startX) * t;
+      const y = range.startY + (range.endY - range.startY) * t + Math.sin(t * Math.PI * 3) * 30;
+      const size = Math.random() * 40 + 20;
+      
+      elements.push(
+        <g key={`mountain-${rangeIndex}-${i}`}>
+          {/* Mountain shadow */}
+          <polygon
+            points={`${x},${y} ${x - size/2},${y - size} ${x + size/2},${y - size}`}
+            fill="rgba(0, 0, 0, 0.2)"
+            transform={`translate(2, 2)`}
+          />
+          {/* Mountain */}
+          <polygon
+            points={`${x},${y} ${x - size/2},${y - size} ${x + size/2},${y - size}`}
+            fill="#8b7355"
+            stroke="#6b5b47"
+            strokeWidth="1"
+          />
+          {/* Mountain highlight */}
+          <polygon
+            points={`${x},${y} ${x - size/4},${y - size/2} ${x + size/4},${y - size/2}`}
+            fill="#a67c52"
+            opacity="0.6"
+          />
+        </g>
+      );
+    }
+  });
+  
+  // Generate forest areas
+  const forestAreas = [
+    { centerX: width * 0.1, centerY: height * 0.8, radius: 80, treeCount: 25 },
+    { centerX: width * 0.9, centerY: height * 0.7, radius: 60, treeCount: 20 },
+    { centerX: width * 0.3, centerY: height * 0.9, radius: 70, treeCount: 22 },
+    { centerX: width * 0.7, centerY: height * 0.1, radius: 50, treeCount: 18 }
+  ];
+  
+  forestAreas.forEach((forest, forestIndex) => {
+    for (let i = 0; i < forest.treeCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * forest.radius;
+      const x = forest.centerX + Math.cos(angle) * distance;
+      const y = forest.centerY + Math.sin(angle) * distance;
+      const size = Math.random() * 12 + 6;
+      
+      elements.push(
+        <g key={`tree-${forestIndex}-${i}`}>
+          {/* Tree trunk */}
+          <rect
+            x={x - 1.5}
+            y={y - size}
+            width="3"
+            height={size}
+            fill="#4a2c17"
+          />
+          {/* Tree crown */}
+          <circle
+            cx={x}
+            cy={y - size}
+            r={size * 0.7}
+            fill="#2d5016"
+          />
+          {/* Tree highlight */}
+          <circle
+            cx={x - size * 0.2}
+            cy={y - size * 1.1}
+            r={size * 0.3}
+            fill="#3d6026"
+            opacity="0.6"
+          />
+        </g>
+      );
+    }
+  });
+  
+  // Generate rivers
+  const rivers = [
+    { startX: width * 0.1, startY: height * 0.2, endX: width * 0.9, endY: height * 0.4 },
+    { startX: width * 0.2, startY: height * 0.6, endX: width * 0.8, endY: height * 0.8 }
+  ];
+  
+  rivers.forEach((river, riverIndex) => {
+    const riverPoints = [];
+    const pointCount = 15;
     
-    trees.push(
-      <g key={i}>
-        {/* Tree trunk */}
-        <rect
-          x={x - 2}
-          y={y - size}
-          width="4"
-          height={size}
-          fill="#4a2c17"
+    for (let i = 0; i < pointCount; i++) {
+      const t = i / (pointCount - 1);
+      const x = river.startX + (river.endX - river.startX) * t;
+      const y = river.startY + (river.endY - river.startY) * t + Math.sin(t * Math.PI * 4) * 20;
+      riverPoints.push({ x, y });
+    }
+    
+    const riverPath = riverPoints.reduce((path, point, index) => {
+      if (index === 0) return `M ${point.x} ${point.y}`;
+      return `${path} L ${point.x} ${point.y}`;
+    }, '');
+    
+    elements.push(
+      <g key={`river-${riverIndex}`}>
+        {/* River shadow */}
+        <path
+          d={riverPath}
+          stroke="#1e3a8a"
+          strokeWidth="8"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.3"
+          transform="translate(1, 1)"
         />
-        {/* Tree crown */}
-        <circle
-          cx={x}
-          cy={y - size}
-          r={size * 0.8}
-          fill="#2d5016"
+        {/* River */}
+        <path
+          d={riverPath}
+          stroke="#3b82f6"
+          strokeWidth="6"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* River highlight */}
+        <path
+          d={riverPath}
+          stroke="#60a5fa"
+          strokeWidth="3"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.7"
         />
       </g>
     );
-  }
+  });
   
-  return <g>{trees}</g>;
+  // Generate lakes
+  const lakes = [
+    { x: width * 0.15, y: height * 0.3, width: 60, height: 40 },
+    { x: width * 0.75, y: height * 0.6, width: 80, height: 50 }
+  ];
+  
+  lakes.forEach((lake, lakeIndex) => {
+    elements.push(
+      <g key={`lake-${lakeIndex}`}>
+        {/* Lake shadow */}
+        <ellipse
+          cx={lake.x + 2}
+          cy={lake.y + 2}
+          rx={lake.width / 2}
+          ry={lake.height / 2}
+          fill="rgba(0, 0, 0, 0.2)"
+        />
+        {/* Lake */}
+        <ellipse
+          cx={lake.x}
+          cy={lake.y}
+          rx={lake.width / 2}
+          ry={lake.height / 2}
+          fill="#3b82f6"
+          stroke="#1e40af"
+          strokeWidth="2"
+        />
+        {/* Lake highlight */}
+        <ellipse
+          cx={lake.x - lake.width * 0.1}
+          cy={lake.y - lake.height * 0.1}
+          rx={lake.width * 0.3}
+          ry={lake.height * 0.3}
+          fill="#60a5fa"
+          opacity="0.6"
+        />
+      </g>
+    );
+  });
+  
+  return <g>{elements}</g>;
 };
 
-const TreasureChest = ({ x, y }: { x: number; y: number }) => (
+const FantasyCastle = ({ x, y }: { x: number; y: number }) => (
   <g>
-    {/* Chest shadow */}
-    <rect
-      x={x + 2}
-      y={y + 2}
-      width="30"
-      height="20"
-      fill="rgba(0, 0, 0, 0.3)"
-      rx="3"
-    />
+    {/* Castle shadow */}
+    <g transform="translate(2, 2)" opacity="0.3">
+      <rect x={x} y={y} width="40" height="30" fill="#000000" rx="2" />
+      <polygon points={`${x + 5},${y} ${x + 20},${y - 15} ${x + 35},${y}`} fill="#000000" />
+    </g>
     
-    {/* Chest body */}
+    {/* Castle base */}
     <rect
       x={x}
       y={y}
-      width="30"
-      height="20"
-      fill="#8b4513"
-      stroke="#654321"
+      width="40"
+      height="30"
+      fill="#8b7355"
+      stroke="#6b5b47"
       strokeWidth="2"
-      rx="3"
-    />
-    
-    {/* Chest lid */}
-    <rect
-      x={x + 2}
-      y={y - 5}
-      width="26"
-      height="8"
-      fill="#a0522d"
-      stroke="#654321"
-      strokeWidth="1"
       rx="2"
     />
     
-    {/* Gold inside */}
-    <rect
-      x={x + 5}
-      y={y + 5}
-      width="20"
-      height="10"
-      fill="#ffd700"
-      opacity="0.8"
-      rx="1"
-    />
+    {/* Castle towers */}
+    <rect x={x + 5} y={y - 10} width="8" height="10" fill="#a67c52" stroke="#8b7355" strokeWidth="1" />
+    <rect x={x + 15} y={y - 15} width="10" height="15" fill="#a67c52" stroke="#8b7355" strokeWidth="1" />
+    <rect x={x + 27} y={y - 10} width="8" height="10" fill="#a67c52" stroke="#8b7355" strokeWidth="1" />
     
-    {/* Lock */}
-    <circle
-      cx={x + 15}
-      cy={y + 10}
-      r="3"
-      fill="#ffd700"
-      stroke="#b8860b"
+    {/* Castle roof */}
+    <polygon
+      points={`${x + 5},${y - 10} ${x + 9},${y - 15} ${x + 9},${y - 10}`}
+      fill="#8b4513"
+      stroke="#654321"
+      strokeWidth="1"
+    />
+    <polygon
+      points={`${x + 15},${y - 15} ${x + 20},${y - 20} ${x + 25},${y - 15}`}
+      fill="#8b4513"
+      stroke="#654321"
+      strokeWidth="1"
+    />
+    <polygon
+      points={`${x + 27},${y - 10} ${x + 31},${y - 15} ${x + 35},${y - 10}`}
+      fill="#8b4513"
+      stroke="#654321"
       strokeWidth="1"
     />
     
-    {/* Treasure icon */}
+    {/* Castle gate */}
+    <rect x={x + 17} y={y + 15} width="6" height="15" fill="#654321" />
+    <circle cx={x + 20} cy={y + 22} r="1" fill="#ffd700" />
+    
+    {/* Castle flag */}
+    <line x1={x + 20} y1={y - 20} x2={x + 20} y2={y - 25} stroke="#8b4513" strokeWidth="2" />
+    <rect x={x + 20} y={y - 30} width="8" height="5" fill="#dc2626" />
+    
+    {/* Castle icon */}
     <text
-      x={x + 15}
-      y={y + 12}
+      x={x + 20}
+      y={y + 8}
       textAnchor="middle"
-      fontSize="12"
-      fill="#000000"
+      fontSize="16"
+      fill="#ffd700"
     >
-      🏆
+      🏰
     </text>
   </g>
 );
@@ -530,14 +742,14 @@ export default function GameMapSVG({ onOpen, direction }: { onOpen: (id: number)
           fill="url(#parchmentGradient)"
         />
         
-        {/* Forest background */}
-        <ForestBackground width={dimensions.width} height={dimensions.height} />
+        {/* Middle Earth background */}
+        <MiddleEarthBackground width={dimensions.width} height={dimensions.height} />
         
         {/* Winding path */}
         <WindingPath points={pathPoints} />
         
         {/* Decorative elements */}
-        <TreasureChest x={30} y={dimensions.height / 2 - 20} />
+        <FantasyCastle x={20} y={dimensions.height / 2 - 20} />
         <FinishFlag x={dimensions.width - 50} y={dimensions.height / 2 - 30} />
         
         {/* Quest nodes */}

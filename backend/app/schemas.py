@@ -59,17 +59,26 @@ class RoadmapNodeOut(RoadmapNodeBase):
     }
 
     @classmethod
-    def from_orm(cls, obj):
+    def model_validate(cls, obj, **kwargs):
         # Convert JSON string resources to list
         import json
+        if hasattr(obj, 'resources') and obj.resources:
+            try:
+                resources = json.loads(obj.resources) if isinstance(obj.resources, str) else obj.resources
+            except (json.JSONDecodeError, TypeError):
+                resources = []
+        else:
+            resources = []
+        
+        # Create data dict with converted resources
         data = {
             "id": obj.id,
             "title": obj.title,
-            "description": obj.description,
+            "description": obj.description or "",
             "direction": obj.direction,
-            "resources": json.loads(obj.resources) if obj.resources else [],
+            "resources": resources,
             "checkpoint": obj.checkpoint,
-            "children": [cls.from_orm(child) for child in obj.children]
+            "children": [cls.model_validate(child) for child in obj.children] if hasattr(obj, 'children') else []
         }
         return cls(**data)
 

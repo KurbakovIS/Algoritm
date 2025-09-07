@@ -20,10 +20,10 @@ export async function api(path: string, opts: RequestInit = {}) {
       
       // Handle specific error codes
       if (res.status === 401) {
-        // Clear invalid token
+        // Clear invalid token but don't reload automatically
         localStorage.removeItem('token')
         localStorage.removeItem('profession')
-        window.location.reload()
+        // Let the calling code handle the 401 error
       }
       
       throw new Error(errorMessage)

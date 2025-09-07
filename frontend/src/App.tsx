@@ -9,7 +9,7 @@ import ProfessionSelect from './components/ProfessionSelect'
 import { User } from './api'
 
 function Shell() {
-  const { user, logout } = useApp()
+  const { user, logout, isLoading } = useApp()
   const [view, setView] = useState<'home'|'login'|'dashboard'|'roadmap'|'topic'>('home')
   const [direction, setDirection] = useState<string>('frontend')
   const [topicId, setTopicId] = useState<number | null>(null)
@@ -42,6 +42,18 @@ function Shell() {
     setDirection('career')
     setProfOpen(false)
     setView('roadmap')
+  }
+
+  // Показываем загрузку пока проверяем аутентификацию
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Загрузка...</p>
+        </div>
+      </div>
+    )
   }
 
   if (!user) {

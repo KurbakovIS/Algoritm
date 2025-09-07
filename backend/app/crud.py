@@ -5,36 +5,42 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 
 
-def get_node(db: Session, node_id: int) -> Optional[models.RoadmapNode]:
+def get_node(db: Session, node_id: int) -> Optional[schemas.RoadmapNodeOut]:
     """
     Retrieves a single roadmap node by its ID.
     """
-    return db.query(models.RoadmapNode).filter(models.RoadmapNode.id == node_id).first()
+    node = db.query(models.RoadmapNode).filter(models.RoadmapNode.id == node_id).first()
+    if not node:
+        return None
+    return schemas.RoadmapNodeOut.model_validate(node)
 
 
-def get_all_nodes(db: Session) -> List[models.RoadmapNode]:
+def get_all_nodes(db: Session) -> List[schemas.RoadmapNodeOut]:
     """
     Retrieves all roadmap nodes.
     """
-    return db.query(models.RoadmapNode).all()
+    nodes = db.query(models.RoadmapNode).all()
+    return [schemas.RoadmapNodeOut.model_validate(node) for node in nodes]
 
 
-def get_nodes_by_direction(db: Session, direction: str) -> List[models.RoadmapNode]:
+def get_nodes_by_direction(db: Session, direction: str) -> List[schemas.RoadmapNodeOut]:
     """
     Retrieves all roadmap nodes for a specific direction.
     """
-    return db.query(models.RoadmapNode).filter(models.RoadmapNode.direction == direction).all()
+    nodes = db.query(models.RoadmapNode).filter(models.RoadmapNode.direction == direction).all()
+    return [schemas.RoadmapNodeOut.model_validate(node) for node in nodes]
 
 
-def create_node(db: Session, node: schemas.RoadmapNodeCreate) -> models.RoadmapNode:
+def create_node(db: Session, node: schemas.RoadmapNodeCreate) -> schemas.RoadmapNodeOut:
     """
     Creates a new roadmap node and links it to parent nodes if specified.
     """
+    import json
     db_node = models.RoadmapNode(
         title=node.title,
         description=node.description,
         direction=node.direction,
-        resources=str(node.resources),  # Storing as JSON string for now
+        resources=json.dumps(node.resources),  # Store as JSON string
         checkpoint=node.checkpoint,
     )
     db.add(db_node)
@@ -47,7 +53,7 @@ def create_node(db: Session, node: schemas.RoadmapNodeCreate) -> models.RoadmapN
             parent.children.append(db_node)
         db.commit()
 
-    return db_node
+    return schemas.RoadmapNodeOut.model_validate(db_node)
 
 
 # --- Team & Corporate CRUD ---

@@ -1,0 +1,71 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: roadmap-db-dev
+    environment:
+      POSTGRES_DB: roadmap
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d roadmap"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - roadmap-dev-network
+
+  # Backend API (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: roadmap-backend-dev
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/roadmap
+      JWT_SECRET: dev-secret-change-in-production
+      PWD_SALT: dev-salt-change-in-production
+      ENVIRONMENT: development
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/.venv  # Исключаем виртуальное окружение из volume
+    command: poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    networks:
+      - roadmap-dev-network
+
+  # Frontend (Development)
+  frontend:
+    image: node:18-alpine
+    container_name: roadmap-frontend-dev
+    working_dir: /app
+    environment:
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Исключаем node_modules из volume
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    restart: unless-stopped
+    networks:
+      - roadmap-dev-network
+
+volumes:
+  postgres_data_dev:
+    driver: local
+
+networks:
+  roadmap-dev-network:
+    driver: bridge

@@ -60,7 +60,11 @@ function Shell() {
   if (!user) {
     return (
       <Routes>
-        <Route path="/login" element={<Login onSuccess={() => navigate('/dashboard')} />} />
+        <Route path="/login" element={<Login onSuccess={() => {
+          // Админы идут в админку, остальные в dashboard
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          navigate(user.role === 'admin' ? '/admin' : '/dashboard');
+        }} />} />
         <Route path="*" element={<Home onLogin={() => navigate('/login')} />} />
       </Routes>
     )
@@ -82,11 +86,13 @@ function Shell() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         
-        <ProfessionSelect 
-          open={profOpen} 
-          onClose={() => setProfOpen(false)} 
-          onPick={pickProfession} 
-        />
+        {user && user.role !== 'admin' && (
+          <ProfessionSelect 
+            open={profOpen} 
+            onClose={() => setProfOpen(false)} 
+            onPick={pickProfession} 
+          />
+        )}
       </div>
     </div>
   )

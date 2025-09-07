@@ -93,12 +93,14 @@ export default function Navigation({ onOpenProfessionSelect }: NavigationProps) 
             >
               Роадмап
             </button>
-            <button 
-              onClick={handleProfessionSelect} 
-              className="glass text-white hover:bg-white/10 transition-colors"
-            >
-              Профессия
-            </button>
+            {user.role !== 'admin' && (
+              <button 
+                onClick={handleProfessionSelect} 
+                className="glass text-white hover:bg-white/10 transition-colors"
+              >
+                Профессия
+              </button>
+            )}
             {user.role === 'admin' && (
               <button 
                 onClick={() => navigate('/admin')} 

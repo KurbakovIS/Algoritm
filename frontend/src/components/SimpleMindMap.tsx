@@ -179,10 +179,10 @@ export default function SimpleMindMap({ onOpen, direction }: { onOpen: (id: numb
       enableFreeDrag: true,
       enableCtrlKeyNodeSelection: true,
       enableNodeEdit: false,
-      // Custom node click handler
+      // Custom node content with click handlers
       customCreateNodeContent: (node: any) => {
         const nodeData = node.nodeData.data;
-        if (!nodeData.id) return null;
+        if (!nodeData || !nodeData.id) return null;
 
         const el = document.createElement('div');
         el.style.cssText = `
@@ -195,20 +195,36 @@ export default function SimpleMindMap({ onOpen, direction }: { onOpen: (id: numb
           padding: 8px;
           border-radius: 8px;
           transition: all 0.2s ease;
+          user-select: none;
         `;
         
         el.innerHTML = `
-          <div style="text-align: center; color: white; font-size: 12px; line-height: 1.2;">
+          <div style="text-align: center; color: white; font-size: 12px; line-height: 1.2; pointer-events: none;">
             ${nodeData.text}
           </div>
         `;
 
+        // Add click handler
         el.addEventListener('click', (e) => {
           e.stopPropagation();
+          e.preventDefault();
+          console.log('Node clicked:', nodeData);
           const nodeWithProgress = findNodeById(nodes, nodeData.id);
           if (nodeWithProgress) {
+            console.log('Found node:', nodeWithProgress);
             setSelectedNode(nodeWithProgress);
           }
+        }); 
+
+        // Add hover effects
+        el.addEventListener('mouseenter', () => {
+          el.style.transform = 'scale(1.05)';
+          el.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        });
+
+        el.addEventListener('mouseleave', () => {
+          el.style.transform = 'scale(1)';
+          el.style.backgroundColor = 'transparent';
         });
 
         return el;

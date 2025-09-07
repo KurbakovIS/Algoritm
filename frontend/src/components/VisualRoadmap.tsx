@@ -1,262 +1,213 @@
-import { useEffect, useState } from 'react'
-import { Progress } from '../api'
+import React, { useEffect, useMemo, useState } from 'react';
+import { Progress } from '../api';
 
-type Node = { 
-  id: number
-  title: string
-  description: string
-  checkpoint: boolean
-  resources: string[]
-  parent_id?: number
-  direction: string
-}
+// Types
+type Node = {
+  id: number;
+  title: string;
+  description: string;
+  checkpoint: boolean;
+  resources: string[];
+  parent_id?: number;
+  direction: string;
+};
 
 type NodeWithProgress = Node & {
-  status: 'not_started' | 'in_progress' | 'completed'
-  score: number
-}
+  status: 'not_started' | 'in_progress' | 'completed';
+  score: number;
+};
 
-type RoadmapLevel = {
-  level: number
-  nodes: NodeWithProgress[]
-}
+type PositionedNode = NodeWithProgress & {
+  x: number;
+  y: number;
+  isLocked: boolean;
+};
 
-export default function VisualRoadmap({ nodes, onOpen }: { nodes: Node[], onOpen: (id: number) => void }) {
-  const [nodesWithProgress, setNodesWithProgress] = useState<NodeWithProgress[]>([])
-  const [levels, setLevels] = useState<RoadmapLevel[]>([])
-  const [selectedNode, setSelectedNode] = useState<NodeWithProgress | null>(null)
+// Helper to get Adventure Icons
+const getAdventureIcon = (node: Node) => {
+  if (node.checkpoint) return '🏆'; // Trophy for checkpoints
+  if (node.direction.toLowerCase().includes('backend')) return '⚙️'; // Gear for backend
+  if (node.direction.toLowerCase().includes('frontend')) return '🎨'; // Palette for frontend
+  return '📚'; // Book for general topics
+};
+
+export default function VisualRoadmap({ nodes, onOpen }: { nodes: Node[]; onOpen: (id: number) => void }) {
+  const [nodesWithProgress, setNodesWithProgress] = useState<NodeWithProgress[]>([]);
+  const [selectedNode, setSelectedNode] = useState<PositionedNode | null>(null);
 
   useEffect(() => {
-    // Загружаем прогресс пользователя
     const loadProgress = async () => {
       try {
-        const progress = await Progress.mine()
-        const progressMap = new Map(progress.map((p: any) => [p.node_id, p]))
-        
-        const nodesWithStatus = nodes.map(node => ({
+        const progress = await Progress.mine();
+        const progressMap = new Map(progress.map((p: any) => [p.node_id, p]));
+        const nodesWithStatus = nodes.map((node) => ({
           ...node,
           status: progressMap.get(node.id)?.status || 'not_started',
-          score: progressMap.get(node.id)?.score || 0
-        }))
-        
-        setNodesWithProgress(nodesWithStatus)
-        buildLevels(nodesWithStatus)
+          score: progressMap.get(node.id)?.score || 0,
+        }));
+        setNodesWithProgress(nodesWithStatus);
       } catch (error) {
-        console.error('Failed to load progress:', error)
-        // Если не удалось загрузить прогресс, показываем без него
-        const nodesWithStatus = nodes.map(node => ({
+        console.error('Failed to load progress:', error);
+        const nodesWithStatus = nodes.map((node) => ({
           ...node,
           status: 'not_started' as const,
-          score: 0
-        }))
-        setNodesWithProgress(nodesWithStatus)
-        buildLevels(nodesWithStatus)
+          score: 0,
+        }));
+        setNodesWithProgress(nodesWithStatus);
       }
+    };
+    if (nodes.length > 0) {
+      loadProgress();
     }
+  }, [nodes]);
 
-    loadProgress()
-  }, [nodes])
+  const positionedNodes = useMemo(() => {
+    if (nodesWithProgress.length === 0) return [];
 
-  const buildLevels = (nodes: NodeWithProgress[]) => {
-    const levelMap = new Map<number, NodeWithProgress[]>()
-    
-    // Сначала добавляем корневые узлы (без parent_id)
-    const roots = nodes.filter(n => !n.parent_id)
-    levelMap.set(0, roots)
-    
-    // Затем строим уровни на основе иерархии
-    let currentLevel = 0
-    let hasMoreLevels = true
-    
-    while (hasMoreLevels) {
-      const currentLevelNodes = levelMap.get(currentLevel) || []
-      const nextLevelNodes: NodeWithProgress[] = []
+    const positioned = new Map<number, PositionedNode>();
+    const nodesById = new Map(nodesWithProgress.map(n => [n.id, n]));
+
+    const placeNode = (node: NodeWithProgress, x: number, y: number, isLocked: boolean) => {
+      const positionedNode: PositionedNode = { ...node, x, y, isLocked };
+      positioned.set(node.id, positionedNode);
+
+      const children = nodesWithProgress.filter(n => n.parent_id === node.id);
+      const childIsLocked = isLocked || node.status !== 'completed';
       
-      currentLevelNodes.forEach(node => {
-        const children = nodes.filter(n => n.parent_id === node.id)
-        nextLevelNodes.push(...children)
-      })
-      
-      if (nextLevelNodes.length > 0) {
-        levelMap.set(currentLevel + 1, nextLevelNodes)
-        currentLevel++
-      } else {
-        hasMoreLevels = false
+      children.forEach((child, index) => {
+        // Spread children out
+        const newX = x + (index % 2 === 0 ? -150 - (index * 20) : 150 + (index * 20));
+        const newY = y + 120;
+        if (!positioned.has(child.id)) {
+          placeNode(child, newX, newY, childIsLocked);
+        }
+      });
+    };
+
+    const roots = nodesWithProgress.filter(n => !n.parent_id);
+    roots.forEach((root, index) => {
+      placeNode(root, (index - (roots.length - 1) / 2) * 300, 50, false);
+    });
+
+    return Array.from(positioned.values());
+  }, [nodesWithProgress]);
+
+  const connections = useMemo(() => {
+    const lines: { x1: number; y1: number; x2: number; y2: number; isCompleted: boolean }[] = [];
+    const nodesMap = new Map(positionedNodes.map(n => [n.id, n]));
+
+    positionedNodes.forEach(node => {
+      if (node.parent_id && nodesMap.has(node.parent_id)) {
+        const parent = nodesMap.get(node.parent_id)!;
+        lines.push({
+          x1: parent.x,
+          y1: parent.y,
+          x2: node.x,
+          y2: node.y,
+          isCompleted: parent.status === 'completed' && !node.isLocked
+        });
       }
-    }
-    
-    const levelsArray = Array.from(levelMap.entries()).map(([level, nodes]) => ({
-      level,
-      nodes
-    }))
-    
-    setLevels(levelsArray)
-  }
+    });
+    return lines;
+  }, [positionedNodes]);
 
-  const getNodeStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-500'
-      case 'in_progress': return 'bg-yellow-500'
-      default: return 'bg-gray-600'
-    }
-  }
-
-  const getNodeStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return '✓'
-      case 'in_progress': return '⏳'
-      default: return '○'
-    }
-  }
-
-  const getCheckpointStyle = (isCheckpoint: boolean) => {
-    if (isCheckpoint) {
-      return 'ring-2 ring-amber-400 ring-opacity-50 glow-pulse'
-    }
-    return ''
-  }
+  const mapDimensions = useMemo(() => {
+    if (positionedNodes.length === 0) return { width: 1200, height: 800 };
+    const xs = positionedNodes.map(n => n.x);
+    const ys = positionedNodes.map(n => n.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    return {
+      width: maxX - minX + 300, // Add padding
+      height: maxY - minY + 200,
+      offsetX: -minX + 150,
+      offsetY: -minY + 100,
+    };
+  }, [positionedNodes]);
 
   return (
-    <div className="relative w-full min-h-screen">
-      {/* Legend */}
-      <div className="modern-card p-6 mb-8">
-        <div className="flex justify-center gap-8 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-gray-400"></div>
-            <span className="text-white">Не начато</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-            <span className="text-white">В процессе</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-green-500"></div>
-            <span className="text-white">Завершено</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-purple-500 ring-2 ring-purple-300"></div>
-            <span className="text-white">Чекпоинт</span>
-          </div>
-        </div>
-      </div>
+    <div className="w-full h-[80vh] bg-slate-800/50 rounded-2xl border border-slate-700 overflow-auto p-4">
+      <div
+        className="relative transition-all duration-500"
+        style={{ width: mapDimensions.width, height: mapDimensions.height }}
+      >
+        {/* SVG for connections */}
+        <svg className="absolute inset-0 w-full h-full" style={{ transform: `translate(${mapDimensions.offsetX}px, ${mapDimensions.offsetY}px)` }}>
+          <defs>
+            <linearGradient id="path-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style={{ stopColor: '#fde047', stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: '#f59e0b', stopOpacity: 1 }} />
+            </linearGradient>
+          </defs>
+          {connections.map((line, index) => (
+            <line
+              key={index}
+              x1={line.x1}
+              y1={line.y1}
+              x2={line.x2}
+              y2={line.y2}
+              stroke={line.isCompleted ? "url(#path-gradient)" : "#4b5563"}
+              strokeWidth="4"
+              strokeDasharray={line.isCompleted ? "none" : "8 4"}
+            />
+          ))}
+        </svg>
 
-      {/* Уровни роадмапа */}
-      <div className="space-y-16">
-        {levels.map((level, levelIndex) => (
-          <div key={level.level} className="relative flex flex-col items-center">
-            {/* Вертикальная линия */}
-            {levelIndex < levels.length - 1 && (
-              <div className="absolute top-full left-1/2 w-0.5 h-16 bg-amber-600/30 transform -translate-x-1/2"></div>
-            )}
-            
-            {/* Заголовок уровня */}
-            <div className="text-center mb-8">
-              <div className="inline-block px-6 py-2 rounded-full bg-amber-900/50 border border-amber-700/50">
-                <span className="text-amber-200 font-bold">
-                  {level.level === 0 ? 'Основы' : 
-                   level.level === 1 ? 'Продвинутый уровень' :
-                   level.level === 2 ? 'Экспертный уровень' :
-                   `Уровень ${level.level + 1}`}
-                </span>
-              </div>
+        {/* Nodes */}
+        {positionedNodes.map(node => (
+          <div
+            key={node.id}
+            className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${!node.isLocked ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+            style={{ left: node.x + mapDimensions.offsetX, top: node.y + mapDimensions.offsetY }}
+            onClick={() => !node.isLocked && setSelectedNode(node)}
+          >
+            <div className={`relative w-20 h-20 flex items-center justify-center rounded-full border-4 transition-all duration-300 ${node.isLocked ? 'border-gray-600 bg-gray-800' : 'border-amber-400 bg-slate-700 hover:bg-amber-500 hover:scale-110'}`}>
+              <span className="text-3xl drop-shadow-lg">{node.isLocked ? '🔒' : getAdventureIcon(node)}</span>
+              {node.status === 'completed' && (
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-slate-800">✓</div>
+              )}
+              {node.status === 'in_progress' && (
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-slate-800">⏳</div>
+              )}
             </div>
-
-            {/* Узлы уровня */}
-            <div className="flex flex-col items-center space-y-8">
-              {level.nodes.map((node, nodeIndex) => (
-                <div key={node.id} className="relative flex flex-col items-center">
-                  {/* Соединительная линия */}
-                  {nodeIndex < level.nodes.length - 1 && (
-                    <div className="absolute top-full left-1/2 w-0.5 h-8 bg-amber-600/40 transform -translate-x-1/2"></div>
-                  )}
-                  
-                  {/* Чекпоинт */}
-                  <div 
-                    className={`
-                      relative group cursor-pointer transition-all duration-300 hover:scale-110
-                      ${getCheckpointStyle(node.checkpoint)}
-                    `}
-                    onClick={() => setSelectedNode(node)}
-                  >
-                    {/* Статус индикатор */}
-                    <div className={`
-                      absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold
-                      ${getNodeStatusColor(node.status)}
-                      shadow-lg
-                    `}>
-                      {getNodeStatusIcon(node.status)}
-                    </div>
-
-                    {/* Круг чекпоинта */}
-                    <div className="w-20 h-20 rounded-full bg-slate-700 border-4 border-amber-500 flex items-center justify-center group-hover:bg-amber-600 transition-colors">
-                      <div className="text-center text-white font-bold text-sm px-2">
-                        {node.title.split(' ').slice(0, 2).join(' ')}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="text-center mt-2 w-32 text-white text-sm font-semibold truncate">{node.title}</div>
           </div>
         ))}
       </div>
 
-      {/* Modal для деталей */}
+      {/* Modal */}
       {selectedNode && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setSelectedNode(null)}>
-          <div className="modern-card p-8 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-2xl font-bold text-white mb-4">{selectedNode.title}</h3>
-            <p className="text-white mb-6 leading-relaxed">{selectedNode.description}</p>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedNode(null)}>
+          <div className="modern-card p-8 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">{getAdventureIcon(selectedNode)}</div>
+              <h3 className="text-3xl font-bold text-white mb-2">{selectedNode.title}</h3>
+            </div>
+            <p className="text-white/80 mb-6 leading-relaxed text-lg">{selectedNode.description}</p>
             <div className="mb-6">
-              <h4 className="text-lg font-semibold text-white mb-2">Ресурсы:</h4>
-              <ul className="list-disc list-inside text-white space-y-1">
+              <h4 className="text-xl font-semibold text-amber-300 mb-3">Ресурсы:</h4>
+              <ul className="list-none space-y-2">
                 {selectedNode.resources.map((resource, index) => (
-                  <li key={index}>{resource}</li>
+                  <li key={index} className="flex items-center gap-3 bg-slate-700/50 rounded-lg p-3">
+                    <span className="text-amber-400">⚡</span>
+                    <span className="text-white">{resource}</span>
+                  </li>
                 ))}
               </ul>
             </div>
-            <button 
-              className="modern-btn w-full py-3 text-lg"
-              onClick={() => { setSelectedNode(null); onOpen(selectedNode.id); }}
-            >
-              Открыть урок
-            </button>
+            <div className="text-center">
+              <button 
+                className="modern-btn px-8 py-4 text-xl font-bold"
+                onClick={() => { setSelectedNode(null); onOpen(selectedNode.id); }}
+              >
+                Начать
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Статистика */}
-      <div className="mt-16">
-        <div className="modern-card p-8">
-          <h3 className="text-2xl font-bold text-white mb-6 text-center">Ваш прогресс</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {nodesWithProgress.filter(n => n.status === 'completed').length}
-              </div>
-              <div className="text-sm text-white">Завершено</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-600 mb-2">
-                {nodesWithProgress.filter(n => n.status === 'in_progress').length}
-              </div>
-              <div className="text-sm text-white">В процессе</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-400 mb-2">
-                {nodesWithProgress.filter(n => n.status === 'not_started').length}
-              </div>
-              <div className="text-sm text-white">Не начато</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">
-                {nodesWithProgress.reduce((sum, n) => sum + n.score, 0)}
-              </div>
-              <div className="text-sm text-white">Всего очков</div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  )
+  );
 }

@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .db import Base, engine, SessionLocal
@@ -8,7 +9,22 @@ from .routers import progress as progress_router
 from .seed import seed
 
 
-app = FastAPI(title="Gamified Roadmap Platform (MVP)")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    Base.metadata.create_all(bind=engine)
+    # Seed initial data
+    db = SessionLocal()
+    try:
+        seed(db)
+    finally:
+        db.close()
+    yield
+    # Shutdown (cleanup if needed)
+    pass
+
+
+app = FastAPI(title="Gamified Roadmap Platform (MVP)", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,17 +33,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup():
-    Base.metadata.create_all(bind=engine)
-    # Seed initial data
-    db = SessionLocal()
-    try:
-        seed(db)
-    finally:
-        db.close()
 
 
 app.include_router(auth_router.router)

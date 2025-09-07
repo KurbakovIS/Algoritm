@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '../../api';
+import NodeRelationsManager from './components/NodeRelationsManager';
 
 interface RoadmapNode {
   id: number;
@@ -35,7 +36,6 @@ const NodeForm: React.FC<NodeFormProps> = ({ node, onSave, onCancel }) => {
     blocking_node_ids: [] as number[]
   });
 
-  const [availableNodes, setAvailableNodes] = useState<RoadmapNode[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,17 +54,7 @@ const NodeForm: React.FC<NodeFormProps> = ({ node, onSave, onCancel }) => {
         blocking_node_ids: node.blocking_node_ids || []
       });
     }
-    loadAvailableNodes();
   }, [node]);
-
-  const loadAvailableNodes = async () => {
-    try {
-      const nodes = await apiClient.getAdminNodes();
-      setAvailableNodes(nodes);
-    } catch (err) {
-      console.error('Ошибка загрузки узлов:', err);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,56 +203,16 @@ const NodeForm: React.FC<NodeFormProps> = ({ node, onSave, onCancel }) => {
           </div>
         </div>
 
-        {/* Родительские узлы */}
+        {/* Управление связями узлов */}
         <div>
-          <label className="block text-sm font-medium mb-2">Родительские узлы</label>
-          <select
-            multiple
-            value={formData.parent_ids}
-            onChange={(e) => {
-              const values = Array.from(e.target.selectedOptions, option => parseInt(option.value));
-              setFormData({...formData, parent_ids: values});
-            }}
-            className="w-full bg-slate-700 text-white p-3 rounded border border-slate-600 focus:border-blue-500 focus:outline-none h-32"
-            size={5}
-          >
-            {availableNodes
-              .filter(n => !node || n.id !== node.id) // Исключаем текущий узел
-              .map(node => (
-                <option key={node.id} value={node.id}>
-                  {node.title} ({node.direction})
-                </option>
-              ))}
-          </select>
-          <p className="text-xs text-slate-400 mt-1">
-            Удерживайте Ctrl для выбора нескольких узлов
-          </p>
-        </div>
-
-        {/* Блокирующие узлы */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Блокируется узлами</label>
-          <select
-            multiple
-            value={formData.blocking_node_ids}
-            onChange={(e) => {
-              const values = Array.from(e.target.selectedOptions, option => parseInt(option.value));
-              setFormData({...formData, blocking_node_ids: values});
-            }}
-            className="w-full bg-slate-700 text-white p-3 rounded border border-slate-600 focus:border-blue-500 focus:outline-none h-32"
-            size={5}
-          >
-            {availableNodes
-              .filter(n => !node || n.id !== node.id) // Исключаем текущий узел
-              .map(node => (
-                <option key={node.id} value={node.id}>
-                  {node.title} ({node.direction})
-                </option>
-              ))}
-          </select>
-          <p className="text-xs text-slate-400 mt-1">
-            Узлы, которые должны быть завершены перед этим узлом
-          </p>
+          <label className="block text-sm font-medium mb-4">Управление связями узлов</label>
+          <NodeRelationsManager
+            currentNode={node || { id: 0, title: formData.title, direction: formData.direction, node_type: formData.node_type, is_active: formData.is_active }}
+            parentIds={formData.parent_ids}
+            blockingNodeIds={formData.blocking_node_ids}
+            onParentIdsChange={(ids) => setFormData({...formData, parent_ids: ids})}
+            onBlockingNodeIdsChange={(ids) => setFormData({...formData, blocking_node_ids: ids})}
+          />
         </div>
 
         {/* Ресурсы */}

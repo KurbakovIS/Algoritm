@@ -20,8 +20,9 @@ class UserOut(BaseModel):
     xp: int
     badges: List[str]
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class LoginRequest(BaseModel):
@@ -38,8 +39,9 @@ class RoadmapNodeOut(BaseModel):
     parent_id: Optional[int]
     checkpoint: bool
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class ProgressUpdate(BaseModel):
@@ -54,6 +56,7 @@ class ProgressOut(BaseModel):
     status: str
     score: int
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 

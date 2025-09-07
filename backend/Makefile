@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-cov format lint clean start start-prod
+.PHONY: help install install-dev test test-cov format lint clean start start-prod db-setup db-migrate db-init db-clear db-status
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -52,3 +52,34 @@ build: ## Build the package
 
 publish: ## Publish to PyPI (requires authentication)
 	poetry publish
+
+# Database commands
+db-setup: ## Setup PostgreSQL database with Docker
+	docker-compose up -d db
+	@echo "Waiting for database to be ready..."
+	@sleep 10
+
+db-migrate: ## Run database migrations
+	poetry run alembic upgrade head
+
+db-migrate-create: ## Create new migration (usage: make db-migrate-create MESSAGE="description")
+	poetry run alembic revision --autogenerate -m "$(MESSAGE)"
+
+db-init: ## Initialize database with data
+	poetry run python -m app.cli init
+
+db-clear: ## Clear all data from database
+	poetry run python -m app.cli clear
+
+db-status: ## Show database status
+	poetry run python -m app.cli status
+
+db-export: ## Export data to JSON files
+	poetry run python -m app.cli export
+
+# Development workflow
+dev-setup: install-dev db-setup db-migrate db-init ## Complete development setup
+	@echo "Development environment is ready!"
+
+dev-reset: db-clear db-init ## Reset development database
+	@echo "Development database reset complete!"

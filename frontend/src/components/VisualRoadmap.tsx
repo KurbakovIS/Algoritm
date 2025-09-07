@@ -36,6 +36,10 @@ const getAdventureIcon = (node: Node) => {
 export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: number) => void, direction?: string }) {
   const [nodes, setNodes] = useState<NodeWithProgress[]>([]);
   const [selectedNode, setSelectedNode] = useState<PositionedNode | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Data Fetching
   useEffect(() => {
@@ -71,6 +75,37 @@ export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: numb
     loadData();
   }, [direction]);
 
+  // Обработчики для зума и панорамирования
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newZoom = Math.max(0.3, Math.min(3, zoom * delta));
+    setZoom(newZoom);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setPan({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const resetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
   // Positioning Logic - улучшенный алгоритм без наложений
   const positionedNodes = useMemo(() => {
     if (nodes.length === 0) return [];
@@ -95,9 +130,10 @@ export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: numb
     buildMap(nodes);
     const roots = rootIds.map(id => nodeMap.get(id)!).filter(Boolean);
 
-    // Размещаем корневые узлы горизонтально
+    // Размещаем корневые узлы горизонтально с адаптивным расстоянием
+    const rootSpacing = Math.max(200, Math.min(300, 400 / Math.max(1, roots.length - 1)));
     roots.forEach((root, index) => {
-      nodesToProcess.push({ node: root, x: (index - (roots.length - 1) / 2) * 300, y: 100, isLocked: false, level: 0 });
+      nodesToProcess.push({ node: root, x: (index - (roots.length - 1) / 2) * rootSpacing, y: 80, isLocked: false, level: 0 });
     });
 
     const visited = new Set<number>();
@@ -117,14 +153,14 @@ export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: numb
       }
       
       const existingPositions = levelPositions.get(level)!;
-      const minDistance = 120; // Минимальное расстояние между узлами
+      const minDistance = Math.max(100, Math.min(150, 200 / Math.max(1, level))); // Адаптивное расстояние
       
       // Ищем свободную позицию
       let attempts = 0;
-      while (attempts < 10) {
+      while (attempts < 15) {
         const tooClose = existingPositions.some(pos => Math.abs(pos - finalX) < minDistance);
         if (!tooClose) break;
-        finalX += minDistance;
+        finalX += minDistance * (attempts % 2 === 0 ? 1 : -1); // Чередуем направление
         attempts++;
       }
       
@@ -136,10 +172,12 @@ export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: numb
       const childIsLocked = isLocked || node.status !== 'completed';
       const nextLevel = level + 1;
       
-      // Размещаем дочерние узлы вертикально вниз
+      // Размещаем дочерние узлы вертикально вниз с адаптивным расстоянием
+      const childSpacing = Math.max(120, Math.min(180, 250 / Math.max(1, node.children.length - 1)));
+      const verticalSpacing = Math.max(150, Math.min(200, 300 / Math.max(1, level + 1)));
       node.children.forEach((child, index) => {
-        const childX = finalX + (index - (node.children.length - 1) / 2) * 150;
-        const childY = finalY + 200; // Фиксированное расстояние вниз
+        const childX = finalX + (index - (node.children.length - 1) / 2) * childSpacing;
+        const childY = finalY + verticalSpacing;
         nodesToProcess.push({ node: child, x: childX, y: childY, isLocked: childIsLocked, level: nextLevel });
       });
     }
@@ -169,7 +207,7 @@ export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: numb
   }, [positionedNodes]);
 
   // --- Render ---
-  // Адаптивные размеры карты без скролла
+  // Адаптивные размеры карты с улучшенным центрированием
   const mapDimensions = useMemo(() => {
     if (positionedNodes.length === 0) return { width: '100%', height: '100%', offsetX: 0, offsetY: 0 };
     
@@ -180,25 +218,59 @@ export default function VisualRoadmap({ onOpen, direction }: { onOpen: (id: numb
     const minY = Math.min(...ys);
     const maxY = Math.max(...ys);
     
-    // Центрируем карту в контейнере
-    const contentWidth = maxX - minX + 200;
-    const contentHeight = maxY - minY + 200;
+    // Улучшенное центрирование с отступами
+    const padding = 150; // Увеличенный отступ
+    const contentWidth = maxX - minX + padding * 2;
+    const contentHeight = maxY - minY + padding * 2;
     
     return {
       width: '100%',
       height: '100%',
-      offsetX: -minX + 100,
-      offsetY: -minY + 100,
+      offsetX: -minX + padding,
+      offsetY: -minY + padding,
       contentWidth,
       contentHeight
     };
   }, [positionedNodes]);
 
   return (
-    <div className="w-full h-[80vh] bg-slate-800/50 rounded-2xl border border-slate-700 overflow-hidden p-4">
+    <div className="w-full min-h-[60vh] max-h-[90vh] bg-slate-800/50 rounded-2xl border border-slate-700 overflow-auto p-4 relative">
+      {/* Кнопки управления */}
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        <button
+          onClick={() => setZoom(Math.min(3, zoom * 1.2))}
+          className="glass px-3 py-2 text-white hover:bg-white/20 transition-colors rounded-lg text-sm"
+        >
+          +
+        </button>
+        <button
+          onClick={() => setZoom(Math.max(0.3, zoom * 0.8))}
+          className="glass px-3 py-2 text-white hover:bg-white/20 transition-colors rounded-lg text-sm"
+        >
+          -
+        </button>
+        <button
+          onClick={resetView}
+          className="glass px-3 py-2 text-white hover:bg-white/20 transition-colors rounded-lg text-sm"
+        >
+          ⌂
+        </button>
+      </div>
+      
       <div
         className="relative transition-all duration-500 w-full h-full flex items-center justify-center"
-        style={{ width: mapDimensions.width, height: mapDimensions.height }}
+        style={{ 
+          width: mapDimensions.width, 
+          height: mapDimensions.height,
+          minHeight: '500px',
+          transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+          transformOrigin: 'center center'
+        }}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
         {/* SVG for connections */}
         <svg className="absolute inset-0 w-full h-full">

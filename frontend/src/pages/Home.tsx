@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react'
+import { Team, Corporate } from '../api'
 
 export default function Home({ onLogin }: { onLogin: () => void }) {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [weather, setWeather] = useState<{temp: number, condition: string} | null>(null)
+  const [teamStats, setTeamStats] = useState<{
+    active_developers: number
+    active_projects: number
+    average_experience: number
+    monthly_releases: number
+  } | null>(null)
+  const [corporateData, setCorporateData] = useState<{
+    active_tasks: number
+    code_reviews: number
+    daily_commits: number
+    learning_modules: number
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -16,6 +31,45 @@ export default function Home({ onLogin }: { onLogin: () => void }) {
       temp: Math.floor(Math.random() * 15) + 5,
       condition: conditions[Math.floor(Math.random() * conditions.length)]
     })
+  }, [])
+
+  // Загрузка данных с бэкенда
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        const [teamStatsData, corporateDataData] = await Promise.all([
+          Team.getStats(),
+          Corporate.getDashboard()
+        ])
+        
+        setTeamStats(teamStatsData)
+        setCorporateData(corporateDataData)
+      } catch (err) {
+        console.error('Ошибка загрузки данных:', err)
+        setError('Не удалось загрузить данные')
+        
+        // Fallback значения
+        setTeamStats({
+          active_developers: 47,
+          active_projects: 12,
+          average_experience: 4.2,
+          monthly_releases: 28
+        })
+        setCorporateData({
+          active_tasks: 12,
+          code_reviews: 5,
+          daily_commits: 8,
+          learning_modules: 3
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
   }, [])
 
   const getGreeting = () => {
@@ -84,43 +138,66 @@ export default function Home({ onLogin }: { onLogin: () => void }) {
           Сводка для разработчика
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="modern-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Активные задачи</h3>
-              <span className="text-2xl">📋</span>
-            </div>
-            <div className="text-3xl font-bold gradient-text mb-2">12</div>
-            <div className="text-sm text-white/60">3 высокого приоритета</div>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="modern-card p-6 animate-pulse">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-5 bg-white/20 rounded w-24"></div>
+                  <div className="h-6 w-6 bg-white/20 rounded"></div>
+                </div>
+                <div className="h-8 bg-white/20 rounded w-16 mb-2"></div>
+                <div className="h-4 bg-white/20 rounded w-32"></div>
+              </div>
+            ))}
           </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="modern-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Активные задачи</h3>
+                <span className="text-2xl">📋</span>
+              </div>
+              <div className="text-3xl font-bold gradient-text mb-2">
+                {corporateData?.active_tasks || 0}
+              </div>
+              <div className="text-sm text-white/60">3 высокого приоритета</div>
+            </div>
 
-          <div className="modern-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Code Review</h3>
-              <span className="text-2xl">👀</span>
+            <div className="modern-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Code Review</h3>
+                <span className="text-2xl">👀</span>
+              </div>
+              <div className="text-3xl font-bold gradient-text mb-2">
+                {corporateData?.code_reviews || 0}
+              </div>
+              <div className="text-sm text-white/60">Ожидают проверки</div>
             </div>
-            <div className="text-3xl font-bold gradient-text mb-2">5</div>
-            <div className="text-sm text-white/60">Ожидают проверки</div>
-          </div>
 
-          <div className="modern-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Коммиты сегодня</h3>
-              <span className="text-2xl">💻</span>
+            <div className="modern-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Коммиты сегодня</h3>
+                <span className="text-2xl">💻</span>
+              </div>
+              <div className="text-3xl font-bold gradient-text mb-2">
+                {corporateData?.daily_commits || 0}
+              </div>
+              <div className="text-sm text-white/60">+2 к вчерашнему дню</div>
             </div>
-            <div className="text-3xl font-bold gradient-text mb-2">8</div>
-            <div className="text-sm text-white/60">+2 к вчерашнему дню</div>
-          </div>
 
-          <div className="modern-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Обучающие модули</h3>
-              <span className="text-2xl">📚</span>
+            <div className="modern-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Обучающие модули</h3>
+                <span className="text-2xl">📚</span>
+              </div>
+              <div className="text-3xl font-bold gradient-text mb-2">
+                {corporateData?.learning_modules || 0}
+              </div>
+              <div className="text-sm text-white/60">Доступны для изучения</div>
             </div>
-            <div className="text-3xl font-bold gradient-text mb-2">3</div>
-            <div className="text-sm text-white/60">Доступны для изучения</div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -168,24 +245,43 @@ export default function Home({ onLogin }: { onLogin: () => void }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="modern-card p-8">
             <h3 className="text-2xl font-bold text-white mb-6">📊 Статистика команды</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-white/80">Активных разработчиков</span>
-                <span className="text-xl font-bold gradient-text">47</span>
+            {loading ? (
+              <div className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <div className="h-4 bg-white/20 rounded w-32 animate-pulse"></div>
+                    <div className="h-6 bg-white/20 rounded w-16 animate-pulse"></div>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-white/80">Проектов в разработке</span>
-                <span className="text-xl font-bold gradient-text">12</span>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-white/80">Активных разработчиков</span>
+                  <span className="text-xl font-bold gradient-text">
+                    {teamStats?.active_developers || 0}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/80">Проектов в разработке</span>
+                  <span className="text-xl font-bold gradient-text">
+                    {teamStats?.active_projects || 0}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/80">Средний опыт команды</span>
+                  <span className="text-xl font-bold gradient-text">
+                    {teamStats?.average_experience || 0} года
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/80">Успешных релизов в месяц</span>
+                  <span className="text-xl font-bold gradient-text">
+                    {teamStats?.monthly_releases || 0}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-white/80">Средний опыт команды</span>
-                <span className="text-xl font-bold gradient-text">4.2 года</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-white/80">Успешных релизов в месяц</span>
-                <span className="text-xl font-bold gradient-text">28</span>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="modern-card p-8">

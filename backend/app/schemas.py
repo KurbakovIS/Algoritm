@@ -89,3 +89,38 @@ class ProgressOut(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+
+# --- Team & Corporate Schemas ---
+
+class TeamStats(BaseModel):
+    active_developers: int
+    active_projects: int
+    average_experience: float
+    monthly_releases: int
+
+
+class ProfessionOut(BaseModel):
+    id: str
+    title: str
+    level: int
+    accent: str
+    subtitle: str
+    description: str
+
+
+class CorporateDashboard(BaseModel):
+    active_tasks: int
+    code_reviews: int
+    daily_commits: int
+    learning_modules: int
+
+
+class UserSettings(BaseModel):
+    profession: Optional[str] = None
+    preferences: Optional[dict] = None
+
+
+class UserSettingsUpdate(BaseModel):
+    profession: Optional[str] = None
+    preferences: Optional[dict] = None

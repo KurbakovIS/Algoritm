@@ -6,6 +6,9 @@ from .models import *  # noqa: F401
 from .routers import auth as auth_router
 from .routers import roadmap as roadmap_router
 from .routers import progress as progress_router
+from .routers import team as team_router
+from .routers import corporate as corporate_router
+from .routers import user as user_router
 from .seed import seed
 
 
@@ -38,6 +41,9 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(roadmap_router.router)
 app.include_router(progress_router.router)
+app.include_router(team_router.router)
+app.include_router(corporate_router.router)
+app.include_router(user_router.router)
 
 
 @app.get("/")

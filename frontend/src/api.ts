@@ -68,3 +68,19 @@ export const Progress = {
   },
   mine() { return api('/progress/mine') }
 }
+
+export const Team = {
+  getStats() { return api('/team/stats') },
+  getProfessions() { return api('/team/professions') }
+}
+
+export const Corporate = {
+  getDashboard() { return api('/corporate/dashboard') }
+}
+
+export const User = {
+  getSettings() { return api('/user/settings') },
+  updateSettings(settings: { profession?: string, preferences?: any }) {
+    return api('/user/settings', { method: 'POST', body: JSON.stringify(settings) })
+  }
+}

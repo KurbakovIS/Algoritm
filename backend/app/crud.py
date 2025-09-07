@@ -210,3 +210,212 @@ def update_user_settings(db: Session, user_id: int, settings: schemas.UserSettin
         profession=user.role,
         preferences=settings.preferences or {}
     )
+
+
+# --- Admin CRUD Operations ---
+
+def create_node_with_blocks(db: Session, node: schemas.RoadmapNodeCreate) -> schemas.RoadmapNodeOut:
+    """
+    Создание узла с блокировками.
+    """
+    import json
+    db_node = models.RoadmapNode(
+        title=node.title,
+        description=node.description,
+        direction=node.direction,
+        resources=json.dumps(node.resources),
+        checkpoint=node.checkpoint,
+        node_type=node.node_type,
+        is_required=node.is_required,
+        order_index=node.order_index,
+        is_active=node.is_active,
+    )
+    db.add(db_node)
+    db.commit()
+    db.refresh(db_node)
+
+    # Создание связей с родителями
+    if node.parent_ids:
+        parents = db.query(models.RoadmapNode).filter(models.RoadmapNode.id.in_(node.parent_ids)).all()
+        for parent in parents:
+            parent.children.append(db_node)
+        db.commit()
+
+    # Создание блокировок
+    if node.blocking_node_ids:
+        for blocking_id in node.blocking_node_ids:
+            block = models.NodeBlock(
+                blocking_node_id=blocking_id,
+                blocked_node_id=db_node.id,
+                block_type="required"
+            )
+            db.add(block)
+        db.commit()
+
+    return schemas.RoadmapNodeOut.model_validate(db_node)
+
+
+def update_node_with_blocks(db: Session, node_id: int, node: schemas.RoadmapNodeCreate) -> schemas.RoadmapNodeOut:
+    """
+    Обновление узла с блокировками.
+    """
+    import json
+    db_node = db.query(models.RoadmapNode).filter(models.RoadmapNode.id == node_id).first()
+    if not db_node:
+        raise ValueError("Node not found")
+
+    # Обновляем основные поля
+    db_node.title = node.title
+    db_node.description = node.description
+    db_node.direction = node.direction
+    db_node.resources = json.dumps(node.resources)
+    db_node.checkpoint = node.checkpoint
+    db_node.node_type = node.node_type
+    db_node.is_required = node.is_required
+    db_node.order_index = node.order_index
+    db_node.is_active = node.is_active
+
+    # Обновляем связи с родителями
+    if node.parent_ids:
+        # Удаляем старые связи
+        db_node.parents.clear()
+        # Добавляем новые
+        parents = db.query(models.RoadmapNode).filter(models.RoadmapNode.id.in_(node.parent_ids)).all()
+        for parent in parents:
+            parent.children.append(db_node)
+
+    # Обновляем блокировки
+    if node.blocking_node_ids:
+        # Удаляем старые блокировки
+        db.query(models.NodeBlock).filter(models.NodeBlock.blocked_node_id == node_id).delete()
+        # Добавляем новые
+        for blocking_id in node.blocking_node_ids:
+            block = models.NodeBlock(
+                blocking_node_id=blocking_id,
+                blocked_node_id=node_id,
+                block_type="required"
+            )
+            db.add(block)
+
+    db.commit()
+    db.refresh(db_node)
+    return schemas.RoadmapNodeOut.model_validate(db_node)
+
+
+def delete_node_cascade(db: Session, node_id: int) -> bool:
+    """
+    Удаление узла с каскадным удалением связей.
+    """
+    db_node = db.query(models.RoadmapNode).filter(models.RoadmapNode.id == node_id).first()
+    if not db_node:
+        return False
+
+    # Удаляем блокировки
+    db.query(models.NodeBlock).filter(
+        (models.NodeBlock.blocking_node_id == node_id) | 
+        (models.NodeBlock.blocked_node_id == node_id)
+    ).delete()
+
+    # Удаляем связи с родителями
+    db_node.parents.clear()
+    db_node.children.clear()
+
+    # Удаляем прогресс
+    db.query(models.Progress).filter(models.Progress.node_id == node_id).delete()
+
+    # Удаляем сам узел
+    db.delete(db_node)
+    db.commit()
+    return True
+
+
+def get_node_dependencies(db: Session, node_id: int) -> List[schemas.RoadmapNodeOut]:
+    """
+    Получение зависимостей узла (узлы, которые блокируют этот узел).
+    """
+    blocks = db.query(models.NodeBlock).filter(models.NodeBlock.blocked_node_id == node_id).all()
+    blocking_nodes = []
+    for block in blocks:
+        node = db.query(models.RoadmapNode).filter(models.RoadmapNode.id == block.blocking_node_id).first()
+        if node:
+            blocking_nodes.append(schemas.RoadmapNodeOut.model_validate(node))
+    return blocking_nodes
+
+
+def check_node_availability(db: Session, node_id: int, user_id: int) -> dict:
+    """
+    Проверка доступности узла для пользователя.
+    """
+    node = db.query(models.RoadmapNode).filter(models.RoadmapNode.id == node_id).first()
+    if not node:
+        return {"available": False, "reason": "Node not found"}
+    
+    # Получаем все блокировки для этого узла
+    blocks = db.query(models.NodeBlock).filter(
+        models.NodeBlock.blocked_node_id == node_id
+    ).all()
+    
+    unavailable_reasons = []
+    
+    for block in blocks:
+        # Проверяем статус блокирующего узла
+        progress = db.query(models.Progress).filter(
+            models.Progress.user_id == user_id,
+            models.Progress.node_id == block.blocking_node_id
+        ).first()
+        
+        if not progress or progress.status != "completed":
+            if block.block_type == "required":
+                unavailable_reasons.append({
+                    "type": "required_block",
+                    "blocking_node": block.blocking_node.title,
+                    "blocking_node_id": block.blocking_node_id
+                })
+            else:
+                unavailable_reasons.append({
+                    "type": "optional_block",
+                    "blocking_node": block.blocking_node.title,
+                    "blocking_node_id": block.blocking_node_id
+                })
+    
+    return {
+        "available": len(unavailable_reasons) == 0,
+        "reasons": unavailable_reasons,
+        "node": schemas.RoadmapNodeOut.model_validate(node)
+    }
+
+
+def create_node_block(db: Session, block: schemas.NodeBlockCreate) -> schemas.NodeBlockOut:
+    """
+    Создание блокировки между узлами.
+    """
+    db_block = models.NodeBlock(
+        blocking_node_id=block.blocking_node_id,
+        blocked_node_id=block.blocked_node_id,
+        block_type=block.block_type
+    )
+    db.add(db_block)
+    db.commit()
+    db.refresh(db_block)
+    return schemas.NodeBlockOut.model_validate(db_block)
+
+
+def delete_node_block(db: Session, block_id: int) -> bool:
+    """
+    Удаление блокировки.
+    """
+    block = db.query(models.NodeBlock).filter(models.NodeBlock.id == block_id).first()
+    if not block:
+        return False
+    
+    db.delete(block)
+    db.commit()
+    return True
+
+
+def get_all_nodes_with_blocks(db: Session) -> List[schemas.RoadmapNodeOut]:
+    """
+    Получение всех узлов с блокировками для админки.
+    """
+    nodes = db.query(models.RoadmapNode).all()
+    return [schemas.RoadmapNodeOut.model_validate(node) for node in nodes]

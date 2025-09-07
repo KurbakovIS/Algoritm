@@ -9,6 +9,7 @@ from .routers import progress as progress_router
 from .routers import team as team_router
 from .routers import corporate as corporate_router
 from .routers import user as user_router
+from .routers import admin as admin_router
 from .seed import seed
 
 
@@ -44,6 +45,7 @@ app.include_router(progress_router.router)
 app.include_router(team_router.router)
 app.include_router(corporate_router.router)
 app.include_router(user_router.router)
+app.include_router(admin_router.router)
 
 
 @app.get("/")

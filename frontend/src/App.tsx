@@ -11,6 +11,8 @@ import Navigation from './components/Navigation'
 import DashboardRoute from './components/DashboardRoute'
 import RoadmapRoute from './components/RoadmapRoute'
 import TopicRoute from './components/TopicRoute'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import RoadmapAdmin from './pages/admin/RoadmapAdmin'
 import { User } from './api'
 
 function Shell() {
@@ -19,8 +21,8 @@ function Shell() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Open profession selection on first login
-    if (user) {
+    // Open profession selection on first login (только для не-админов)
+    if (user && user.role !== 'admin') {
       const prof = localStorage.getItem('profession')
       if (!prof) {
         setProfOpen(true)
@@ -75,6 +77,8 @@ function Shell() {
           <Route path="/dashboard" element={<DashboardRoute />} />
           <Route path="/roadmap/:direction" element={<RoadmapRoute />} />
           <Route path="/topic/:id" element={<TopicRoute />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/roadmap" element={<RoadmapAdmin />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         

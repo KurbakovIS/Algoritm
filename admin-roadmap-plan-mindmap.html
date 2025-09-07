@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>План админки роадмапа</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .mindmap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .central-node {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
+        }
+        .branch {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .branch-top { top: -200px; }
+        .branch-right { right: -300px; top: 50px; }
+        .branch-bottom { bottom: -200px; }
+        .branch-left { left: -300px; top: 50px; }
+        .node {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        .node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .sub-node {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 5px;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .sub-node:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        .connection {
+            position: absolute;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+        .connection-horizontal {
+            width: 100px;
+            height: 3px;
+        }
+        .connection-vertical {
+            width: 3px;
+            height: 100px;
+        }
+        .level-1 { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+        .level-2 { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+        .level-3 { background: linear-gradient(135deg, #d299c2, #fef9d7); }
+        .level-4 { background: linear-gradient(135deg, #89f7fe, #66a6ff); }
+    </style>
+</head>
+<body>
+    <div class="mindmap">
+        <!-- Центральный узел -->
+        <div class="central-node">
+            🎯 АДМИНКА РОАДМАПА
+        </div>
+
+        <!-- Верхняя ветка - Backend API -->
+        <div class="branch branch-top">
+            <div class="node level-1">🔧 Backend API</div>
+            <div class="sub-node">📝 CRUD операции для узлов</div>
+            <div class="sub-node">🔗 Управление связями</div>
+            <div class="sub-node">🔒 Система блокировок</div>
+            <div class="sub-node">📊 Валидация данных</div>
+        </div>
+
+        <!-- Правая ветка - Frontend UI -->
+        <div class="branch branch-right">
+            <div class="node level-1">🎨 Frontend UI</div>
+            <div class="sub-node">📋 Список узлов</div>
+            <div class="sub-node">➕ Создание узлов</div>
+            <div class="sub-node">✏️ Редактирование</div>
+            <div class="sub-node">🗑️ Удаление узлов</div>
+            <div class="sub-node">🔗 Управление связями</div>
+        </div>
+
+        <!-- Нижняя ветка - Структура данных -->
+        <div class="branch branch-bottom">
+            <div class="node level-1">📊 Структура данных</div>
+            <div class="sub-node">🏠 Родительские узлы</div>
+            <div class="sub-node">📋 Дочерние задачи</div>
+            <div class="sub-node">⭐ Дополнительные узлы</div>
+            <div class="sub-node">🔒 Система блокировок</div>
+        </div>
+
+        <!-- Левая ветка - Функциональность -->
+        <div class="branch branch-left">
+            <div class="node level-1">⚙️ Функциональность</div>
+            <div class="sub-node">🎯 Иерархия узлов</div>
+            <div class="sub-node">🔐 Условные блокировки</div>
+            <div class="sub-node">📈 Прогресс выполнения</div>
+            <div class="sub-node">🎮 Игровые механики</div>
+        </div>
+    </div>
+
+    <script>
+        // Добавляем интерактивность
+        document.querySelectorAll('.node, .sub-node').forEach(node => {
+            node.addEventListener('click', function() {
+                this.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+
+        // Анимация появления
+        setTimeout(() => {
+            document.querySelectorAll('.node, .sub-node').forEach((node, index) => {
+                setTimeout(() => {
+                    node.style.opacity = '0';
+                    node.style.transform = 'translateY(20px)';
+                    node.style.transition = 'all 0.5s ease';
+                    setTimeout(() => {
+                        node.style.opacity = '1';
+                        node.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        }, 500);
+    </script>
+</body>
+</html>

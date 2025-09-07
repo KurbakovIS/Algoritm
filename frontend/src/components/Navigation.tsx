@@ -99,6 +99,18 @@ export default function Navigation({ onOpenProfessionSelect }: NavigationProps) 
             >
               Профессия
             </button>
+            {user.role === 'admin' && (
+              <button 
+                onClick={() => navigate('/admin')} 
+                className={`transition-colors ${
+                  location.pathname.startsWith('/admin') 
+                    ? 'modern-btn' 
+                    : 'glass text-white hover:bg-white/10'
+                }`}
+              >
+                Админка
+              </button>
+            )}
             <button 
               onClick={handleLogout} 
               className="glass text-white hover:bg-white/10 transition-colors"

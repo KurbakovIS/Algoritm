@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean, UniqueConstraint, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean, UniqueConstraint, Table, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from .db import Base
 
 
@@ -32,6 +33,12 @@ class RoadmapNode(Base):
     description = Column(Text, default="")
     resources = Column(Text, default="[]")  # JSON string
     checkpoint = Column(Boolean, default=False)
+    
+    # Новые поля для админки
+    node_type = Column(String(20), default="task", nullable=False)  # parent, task, optional
+    is_required = Column(Boolean, default=True, nullable=False)     # обязательный/необязательный
+    order_index = Column(Integer, default=0, nullable=False)        # порядок отображения
+    is_active = Column(Boolean, default=True, nullable=False)       # активность узла
 
     # Many-to-many relationship to self
     children = relationship(
@@ -43,6 +50,10 @@ class RoadmapNode(Base):
     )
 
     progresses = relationship("Progress", back_populates="node", cascade="all, delete-orphan")
+    
+    # Новые связи для блокировок
+    blocked_by = relationship("NodeBlock", foreign_keys="NodeBlock.blocked_node_id", back_populates="blocked_node")
+    blocks = relationship("NodeBlock", foreign_keys="NodeBlock.blocking_node_id", back_populates="blocking_node")
 
 
 class Profession(Base):
@@ -54,6 +65,19 @@ class Profession(Base):
     subtitle = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+
+
+class NodeBlock(Base):
+    __tablename__ = "node_blocks"
+    id = Column(Integer, primary_key=True, index=True)
+    blocking_node_id = Column(Integer, ForeignKey("roadmap_nodes.id"), nullable=False)
+    blocked_node_id = Column(Integer, ForeignKey("roadmap_nodes.id"), nullable=False)
+    block_type = Column(String(20), default="required", nullable=False)  # required, optional
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Связи с узлами
+    blocking_node = relationship("RoadmapNode", foreign_keys=[blocking_node_id], back_populates="blocks")
+    blocked_node = relationship("RoadmapNode", foreign_keys=[blocked_node_id], back_populates="blocked_by")
 
 
 class Progress(Base):

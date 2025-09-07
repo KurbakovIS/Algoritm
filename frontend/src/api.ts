@@ -85,3 +85,50 @@ export const User = {
     return api('/user/settings', { method: 'POST', body: JSON.stringify(settings) })
   }
 }
+
+export const Admin = {
+  // Узлы роадмапа
+  getNodes() { return api('/admin/roadmap/nodes') },
+  createNode(nodeData: any) { 
+    return api('/admin/roadmap/nodes', { method: 'POST', body: JSON.stringify(nodeData) })
+  },
+  updateNode(nodeId: number, nodeData: any) { 
+    return api(`/admin/roadmap/nodes/${nodeId}`, { method: 'PUT', body: JSON.stringify(nodeData) })
+  },
+  deleteNode(nodeId: number) { 
+    return api(`/admin/roadmap/nodes/${nodeId}`, { method: 'DELETE' })
+  },
+  
+  // Зависимости
+  getNodeDependencies(nodeId: number) { 
+    return api(`/admin/roadmap/nodes/${nodeId}/dependencies`) 
+  },
+  checkNodeAvailability(nodeId: number, userId: number) { 
+    return api(`/admin/roadmap/nodes/${nodeId}/availability/${userId}`) 
+  },
+  
+  // Блокировки
+  createBlock(blockData: any) { 
+    return api('/admin/roadmap/blocks', { method: 'POST', body: JSON.stringify(blockData) })
+  },
+  deleteBlock(blockId: number) { 
+    return api(`/admin/roadmap/blocks/${blockId}`, { method: 'DELETE' })
+  }
+}
+
+// Алиасы для совместимости
+export const apiClient = {
+  ...Auth,
+  ...Roadmap,
+  ...Progress,
+  ...Team,
+  ...Corporate,
+  ...User,
+  ...Admin,
+  
+  // Админские методы с короткими именами
+  getAdminNodes: Admin.getNodes,
+  createNode: Admin.createNode,
+  updateNode: Admin.updateNode,
+  deleteNode: Admin.deleteNode
+}

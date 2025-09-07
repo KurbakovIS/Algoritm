@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { BackgroundLayers } from './roadmap-elements';
 
 interface GameMapSVGProps {
   direction?: string;
@@ -31,12 +32,8 @@ const GameMapSVG: React.FC<GameMapSVGProps> = ({ direction, onOpen }) => {
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
         className="w-full h-full"
       >
-        {/* Simple parchment background */}
-        <rect
-          width={dimensions.width}
-          height={dimensions.height}
-          fill="#d4af8c"
-        />
+        {/* Многослойный фон */}
+        <BackgroundLayers width={dimensions.width} height={dimensions.height} />
         
         {/* Здесь будут ваши новые компоненты */}
       </svg>

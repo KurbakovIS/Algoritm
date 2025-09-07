@@ -1,5 +1,4 @@
 // Экспорт всех компонентов роадмапа
 // Добавляйте сюда новые компоненты по мере их создания
 
-// Пример:
-// export { default as MyComponent } from './MyComponent';
+export { default as BackgroundLayers } from './BackgroundLayers';

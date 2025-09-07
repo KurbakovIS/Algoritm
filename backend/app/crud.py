@@ -19,6 +19,13 @@ def get_all_nodes(db: Session) -> List[models.RoadmapNode]:
     return db.query(models.RoadmapNode).all()
 
 
+def get_nodes_by_direction(db: Session, direction: str) -> List[models.RoadmapNode]:
+    """
+    Retrieves all roadmap nodes for a specific direction.
+    """
+    return db.query(models.RoadmapNode).filter(models.RoadmapNode.direction == direction).all()
+
+
 def create_node(db: Session, node: schemas.RoadmapNodeCreate) -> models.RoadmapNode:
     """
     Creates a new roadmap node and links it to parent nodes if specified.

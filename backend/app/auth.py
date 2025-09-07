@@ -4,6 +4,7 @@ import json
 import hashlib
 import hmac
 import base64
+import bcrypt
 from typing import Optional
 
 
@@ -13,13 +14,17 @@ JWT_EXP_SECONDS = 60 * 60 * 24
 
 
 def hash_password(password: str) -> str:
-    # Simple salted hash for MVP (not for production)
-    salt = os.getenv("PWD_SALT", "salt")
-    return hashlib.sha256(f"{salt}:{password}".encode()).hexdigest()
+    """Hash password using bcrypt for secure storage."""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    return hash_password(password) == password_hash
+    """Verify password against bcrypt hash."""
+    try:
+        return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+    except Exception:
+        return False
 
 
 def _b64url(data: bytes) -> str:

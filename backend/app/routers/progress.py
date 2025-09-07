@@ -54,11 +54,11 @@ def update_progress(
 
     db.commit()
     db.refresh(prog)
-    return ProgressOut.from_orm(prog)
+    return ProgressOut.model_validate(prog)
 
 
 @router.get("/mine", response_model=List[ProgressOut])
 def my_progress(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     rows = db.query(Progress).filter(Progress.user_id == current_user.id).all()
-    return [ProgressOut.from_orm(p) for p in rows]
+    return [ProgressOut.model_validate(p) for p in rows]
 

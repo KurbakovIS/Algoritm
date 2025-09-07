@@ -9,7 +9,7 @@ export default function Topic({ id, onBack }: { id: number, onBack: () => void }
   const [status, setStatus] = useState<'not_started'|'in_progress'|'completed'>('not_started')
   const [score, setScore] = useState(0)
   const [toast, setToast] = useState('')
-  useEffect(() => { (async () => setNode(await Roadmap.node(id)))() }, [id])
+  useEffect(() => { (async () => setNode(await Roadmap.getNode(id)))() }, [id])
 
   async function update(newStatus: 'not_started'|'in_progress'|'completed') {
     setStatus(newStatus)

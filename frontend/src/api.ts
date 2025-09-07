@@ -5,9 +5,37 @@ export async function api(path: string, opts: RequestInit = {}) {
   const headers = new Headers(opts.headers || {})
   headers.set('Content-Type', 'application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
-  const res = await fetch(`${API_URL}${path}`, { ...opts, headers })
-  if (!res.ok) throw new Error(await res.text())
-  return res.json()
+  
+  try {
+    const res = await fetch(`${API_URL}${path}`, { ...opts, headers })
+    
+    if (!res.ok) {
+      let errorMessage = 'Произошла ошибка'
+      try {
+        const errorData = await res.json()
+        errorMessage = errorData.detail || errorMessage
+      } catch {
+        errorMessage = await res.text() || errorMessage
+      }
+      
+      // Handle specific error codes
+      if (res.status === 401) {
+        // Clear invalid token
+        localStorage.removeItem('token')
+        localStorage.removeItem('profession')
+        window.location.reload()
+      }
+      
+      throw new Error(errorMessage)
+    }
+    
+    return res.json()
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error('Ошибка сети')
+  }
 }
 
 export const Auth = {
@@ -26,6 +54,12 @@ export const Auth = {
 
 export const Roadmap = {
   getTree() { return api('/roadmap/') },
+  async byDirection(direction: string) { 
+    return api(`/roadmap/directions/${direction}`) 
+  },
+  async getNode(id: number) { 
+    return api(`/roadmap/node/${id}`) 
+  }
 }
 
 export const Progress = {

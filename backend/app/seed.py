@@ -1,6 +1,7 @@
 import json
 from sqlalchemy.orm import Session
-from .models import RoadmapNode
+from .models import RoadmapNode, User, Progress
+from .auth import hash_password
 
 # Структура данных для дорожных карт
 # Каждый узел имеет уникальный 'key' и список 'parents', указывающих на 'key' родительских узлов.
@@ -22,6 +23,13 @@ ROADMAP_DATA = {
         {"key": "dev_root", "title": "DevOps Pathfinder", "description": "Linux basics, Docker, CI/CD.", "resources": ["https://docs.docker.com/get-started/"], "parents": [], "checkpoint": False},
         {"key": "dev_linux", "title": "Linux & Shell", "description": "Files, permissions, bash.", "resources": ["https://linuxjourney.com/"], "parents": ["dev_root"], "checkpoint": False},
         {"key": "dev_docker", "title": "Docker Fundamentals", "description": "Images, containers, compose.", "resources": ["https://docs.docker.com/get-started/"], "parents": ["dev_linux"], "checkpoint": True},
+    ],
+    "career": [
+        {"key": "career_root", "title": "Junior Developer", "description": "Начальный уровень разработчика. Изучение основ программирования и инструментов.", "resources": ["https://roadmap.sh/"], "parents": [], "checkpoint": False},
+        {"key": "career_junior", "title": "Junior Developer", "description": "Основы программирования, работа в команде, изучение фреймворков.", "resources": ["https://github.com/kamranahmedse/developer-roadmap"], "parents": ["career_root"], "checkpoint": True},
+        {"key": "career_middle", "title": "Middle Developer", "description": "Архитектура приложений, оптимизация, менторинг джунов.", "resources": ["https://martinfowler.com/"], "parents": ["career_junior"], "checkpoint": True},
+        {"key": "career_senior", "title": "Senior Developer", "description": "Системный дизайн, техническое лидерство, принятие архитектурных решений.", "resources": ["https://www.educative.io/courses/grokking-the-system-design-interview"], "parents": ["career_middle"], "checkpoint": True},
+        {"key": "career_lead", "title": "Tech Lead", "description": "Управление командой, планирование архитектуры, техническое видение.", "resources": ["https://www.oreilly.com/library/view/team-topologies/9781492040664/"], "parents": ["career_senior"], "checkpoint": True},
     ]
 }
 
@@ -58,6 +66,76 @@ def seed(db: Session):
                     if parent_node:
                         parent_node.children.append(current_node)
 
+    # 3. Создаем тестовых пользователей
+    test_users = [
+        {"email": "junior@dev.com", "password": "password123", "role": "junior", "xp": 150, "badges": ["Apprentice"]},
+        {"email": "middle@dev.com", "password": "password123", "role": "middle", "xp": 450, "badges": ["Apprentice", "Journeyman"]},
+        {"email": "senior@dev.com", "password": "password123", "role": "senior", "xp": 850, "badges": ["Apprentice", "Journeyman", "Adept"]},
+        {"email": "lead@dev.com", "password": "password123", "role": "lead", "xp": 1200, "badges": ["Apprentice", "Journeyman", "Adept", "Master"]},
+    ]
+    
+    created_users = {}
+    for user_data in test_users:
+        user = User(
+            email=user_data["email"],
+            password_hash=hash_password(user_data["password"]),
+            role=user_data["role"],
+            xp=user_data["xp"],
+            badges=json.dumps(user_data["badges"])
+        )
+        db.add(user)
+        created_users[user_data["email"]] = user
+    
+    db.flush()
+
+    # 4. Создаем тестовый прогресс
+    # Junior пользователь - завершил базовые темы
+    junior_user = created_users["junior@dev.com"]
+    junior_progress = [
+        {"node_key": "fe_root", "status": "completed", "score": 85},
+        {"node_key": "fe_html", "status": "completed", "score": 90},
+        {"node_key": "fe_css", "status": "in_progress", "score": 0},
+        {"node_key": "career_root", "status": "completed", "score": 80},
+        {"node_key": "career_junior", "status": "completed", "score": 75},
+    ]
+    
+    for prog_data in junior_progress:
+        node = created_nodes.get(prog_data["node_key"])
+        if node:
+            progress = Progress(
+                user_id=junior_user.id,
+                node_id=node.id,
+                status=prog_data["status"],
+                score=prog_data["score"]
+            )
+            db.add(progress)
+    
+    # Middle пользователь - больше прогресса
+    middle_user = created_users["middle@dev.com"]
+    middle_progress = [
+        {"node_key": "fe_root", "status": "completed", "score": 95},
+        {"node_key": "fe_html", "status": "completed", "score": 90},
+        {"node_key": "fe_css", "status": "completed", "score": 85},
+        {"node_key": "fe_js", "status": "completed", "score": 80},
+        {"node_key": "fe_react", "status": "in_progress", "score": 0},
+        {"node_key": "be_root", "status": "completed", "score": 75},
+        {"node_key": "be_python", "status": "completed", "score": 85},
+        {"node_key": "career_root", "status": "completed", "score": 90},
+        {"node_key": "career_junior", "status": "completed", "score": 85},
+        {"node_key": "career_middle", "status": "completed", "score": 80},
+    ]
+    
+    for prog_data in middle_progress:
+        node = created_nodes.get(prog_data["node_key"])
+        if node:
+            progress = Progress(
+                user_id=middle_user.id,
+                node_id=node.id,
+                status=prog_data["status"],
+                score=prog_data["score"]
+            )
+            db.add(progress)
+
     db.commit()
-    print("Database seeding complete.")
+    print("Database seeding complete with test users and progress.")
 

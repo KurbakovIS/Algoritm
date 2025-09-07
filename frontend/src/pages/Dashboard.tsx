@@ -3,19 +3,29 @@ import RoleBadge from '../components/RoleBadge'
 import { useApp } from '../store'
 import Avatar from '../components/Avatar'
 import { useEffect, useMemo, useState } from 'react'
-import { Progress } from '../api'
+import { Progress, Roadmap } from '../api'
 
 export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: (dir: string) => void, onChangeProfession: () => void }) {
   const { user } = useApp()
   const [completed, setCompleted] = useState(0)
   const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => { (async () => {
     try {
+      setLoading(true)
+      setError(null)
       const mine = await Progress.mine()
       setCompleted(mine.filter((m: any) => m.status === 'completed').length)
-      setTotal(mine.length)
-    } catch {}
+      // Получаем общее количество узлов из всех направлений
+      const allNodes = await Roadmap.getTree()
+      setTotal(allNodes.length)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка загрузки данных')
+    } finally {
+      setLoading(false)
+    }
   })() }, [user?.id])
 
   const level = useMemo(() => {
@@ -26,6 +36,35 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
     if (xp >= 100) return 2
     return 1
   }, [user?.xp])
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="modern-card p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Загрузка данных...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="modern-card p-8 text-center">
+          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-white mb-2">Ошибка загрузки</h2>
+          <p className="text-white mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="modern-btn px-4 py-2"
+          >
+            Попробовать снова
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Profile Header */}
@@ -60,7 +99,7 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
             <span className="text-white font-bold text-xl">{completed}</span>
           </div>
           <h3 className="text-lg font-semibold text-white mb-1">Завершено</h3>
-          <p className="text-sm text-white">из {Math.max(total, completed)} тем</p>
+          <p className="text-sm text-white">из {total} тем</p>
         </div>
 
         <div className="modern-card p-6 text-center">
@@ -94,15 +133,15 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-white">Общий прогресс</span>
-            <span className="text-white font-semibold">{completed}/{Math.max(total, completed)} тем</span>
+            <span className="text-white font-semibold">{completed}/{total} тем</span>
           </div>
           <div className="w-full bg-slate-700 rounded-full h-4">
             <div 
               className="bg-gradient-to-r from-blue-500 to-purple-600 h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2" 
-              style={{ width: `${Math.min(100, Math.round(((completed||0)/Math.max(total||1, completed||1))*100))}%` }} 
+              style={{ width: `${Math.min(100, Math.round(((completed||0)/(total||1))*100))}%` }} 
             >
               <span className="text-white text-xs font-medium">
-                {Math.round(((completed||0)/Math.max(total||1, completed||1))*100)}%
+                {Math.round(((completed||0)/(total||1))*100)}%
               </span>
             </div>
           </div>

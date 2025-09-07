@@ -1,11 +1,17 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator, Field
 from typing import List, Optional, Literal
 
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str
-    role: str = "intern"
+    password: str = Field(..., min_length=6, max_length=100)
+    role: str = Field(default="intern", regex="^(intern|junior|middle|senior|lead)$")
+    
+    @validator('password')
+    def validate_password(cls, v):
+        if len(v) < 6:
+            raise ValueError('Password must be at least 6 characters long')
+        return v
 
 
 class Token(BaseModel):
@@ -27,7 +33,7 @@ class UserOut(BaseModel):
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=1)
 
 
 # --- Roadmap Schemas ---
@@ -51,6 +57,21 @@ class RoadmapNodeOut(RoadmapNodeBase):
     model_config = {
         "from_attributes": True
     }
+
+    @classmethod
+    def from_orm(cls, obj):
+        # Convert JSON string resources to list
+        import json
+        data = {
+            "id": obj.id,
+            "title": obj.title,
+            "description": obj.description,
+            "direction": obj.direction,
+            "resources": json.loads(obj.resources) if obj.resources else [],
+            "checkpoint": obj.checkpoint,
+            "children": [cls.from_orm(child) for child in obj.children]
+        }
+        return cls(**data)
 
 
 class ProgressUpdate(BaseModel):

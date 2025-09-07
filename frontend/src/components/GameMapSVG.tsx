@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const GameMapSVG = () => {
+interface GameMapSVGProps {
+  direction?: string;
+  onOpen?: (id: number) => void;
+}
+
+const GameMapSVG: React.FC<GameMapSVGProps> = ({ direction, onOpen }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
 
@@ -26,17 +31,11 @@ const GameMapSVG = () => {
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
         className="w-full h-full"
       >
-        {/* Parchment background image */}
-        <defs>
-          <pattern id="parchmentPattern" patternUnits="userSpaceOnUse" width="100%" height="100%">
-            <image href="/parchment-bg.jpg" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
-          </pattern>
-        </defs>
-        
+        {/* Simple parchment background */}
         <rect
           width={dimensions.width}
           height={dimensions.height}
-          fill="url(#parchmentPattern)"
+          fill="#d4af8c"
         />
         
         {/* Здесь будут ваши новые компоненты */}

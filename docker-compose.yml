@@ -43,7 +43,7 @@ services:
     networks:
       - roadmap-network
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/')"]
+      test: ["CMD", "poetry", "run", "python", "-c", "import requests; requests.get('http://localhost:8000/')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -54,6 +54,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: production
     container_name: roadmap-frontend
     ports:
       - "80:80"

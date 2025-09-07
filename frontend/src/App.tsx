@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { AppProvider, useApp } from './store'
 import Login from './pages/Login'
+import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import RoadmapPage from './pages/Roadmap'
 import Topic from './pages/Topic'
@@ -8,13 +9,13 @@ import ProfessionSelect from './components/ProfessionSelect'
 
 function Shell() {
   const { user, logout } = useApp()
-  const [view, setView] = useState<'dashboard'|'roadmap'|'topic'>('dashboard')
+  const [view, setView] = useState<'home'|'login'|'dashboard'|'roadmap'|'topic'>('home')
   const [direction, setDirection] = useState<string>('frontend')
   const [topicId, setTopicId] = useState<number | null>(null)
   const [profOpen, setProfOpen] = useState(false)
 
   useEffect(() => {
-    if (!user) setView('dashboard')
+    if (!user) setView('home')
   }, [user])
 
   useEffect(() => {
@@ -33,7 +34,12 @@ function Shell() {
     setView('roadmap')
   }
 
-  if (!user) return <Login onSuccess={() => setView('dashboard')} />
+  if (!user) {
+    if (view === 'login') {
+      return <Login onSuccess={() => setView('dashboard')} />
+    }
+    return <Home onLogin={() => setView('login')} />
+  }
 
   return (
     <div className="min-h-screen">
@@ -42,7 +48,12 @@ function Shell() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold gradient-text">DevAcademy</h1>
+              <button 
+                onClick={() => setView('dashboard')}
+                className="text-2xl font-bold gradient-text hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                DevAcademy
+              </button>
               <span className="text-white/60 text-sm">Портал развития разработчиков</span>
             </div>
             <div className="flex items-center space-x-3">
@@ -57,6 +68,12 @@ function Shell() {
                 className="modern-btn px-4 py-2 text-sm"
               >
                 Роадмап
+              </button>
+              <button 
+                onClick={()=>setView('home')} 
+                className="glass px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors rounded-lg"
+              >
+                Главная
               </button>
               <button 
                 onClick={()=>setProfOpen(true)} 
@@ -77,6 +94,7 @@ function Shell() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
+        {view==='home' && <Home onLogin={() => setView('login')} />}
         {view==='dashboard' && <Dashboard onSelect={(dir)=>{ setDirection(dir); setView('roadmap') }} onChangeProfession={()=>setProfOpen(true)} />}
         {view==='roadmap' && <RoadmapPage direction={direction} onOpen={(id)=>{ setTopicId(id); setView('topic') }} />}
         {view==='topic' && topicId!=null && <Topic id={topicId} onBack={()=>setView('roadmap')} />}

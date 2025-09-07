@@ -23,38 +23,24 @@ const GameMapSVG: React.FC<GameMapSVGProps> = ({ direction, onOpen }) => {
         // Загружаем данные в зависимости от выбранного направления
         let roadmapData;
         if (direction) {
-          // Загружаем узлы для конкретного направления
+          // Загружаем корневые узлы для конкретного направления (бэкенд уже фильтрует)
           roadmapData = await Roadmap.byDirection(direction);
           console.log(`Loaded roadmap data for direction "${direction}":`, roadmapData);
         } else {
           // Загружаем все узлы
           roadmapData = await Roadmap.getTree();
           console.log('Loaded all roadmap data:', roadmapData);
-        }
-        
-        // Фильтруем только корневые узлы
-        const allNodes = roadmapData || [];
-        let rootNodes;
-        
-        if (direction) {
-          // Для конкретного направления берем только корневой узел этого направления
-          rootNodes = allNodes.filter(node => {
-            // Проверяем, не является ли этот узел дочерним для какого-либо другого узла
-            return !allNodes.some(otherNode => 
-              otherNode.children && otherNode.children.some(child => child.id === node.id)
-            );
-          });
-        } else {
-          // Для всех направлений берем корневые узлы всех направлений
-          rootNodes = allNodes.filter(node => {
+          
+          // Для всех направлений фильтруем корневые узлы на фронтенде
+          const allNodes = roadmapData || [];
+          roadmapData = allNodes.filter(node => {
             return !allNodes.some(otherNode => 
               otherNode.children && otherNode.children.some(child => child.id === node.id)
             );
           });
         }
         
-        console.log('Root nodes for direction:', direction, rootNodes);
-        setNodes(rootNodes);
+        setNodes(roadmapData || []);
 
       } catch (error) {
         console.error('Failed to load roadmap data:', error);

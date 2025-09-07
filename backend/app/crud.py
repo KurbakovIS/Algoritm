@@ -31,6 +31,29 @@ def get_nodes_by_direction(db: Session, direction: str) -> List[schemas.RoadmapN
     return [schemas.RoadmapNodeOut.model_validate(node) for node in nodes]
 
 
+def get_root_nodes_by_direction(db: Session, direction: str) -> List[schemas.RoadmapNodeOut]:
+    """
+    Retrieves only root nodes (nodes without parents) for a specific direction.
+    """
+    # Получаем все узлы для направления
+    all_nodes = db.query(models.RoadmapNode).filter(models.RoadmapNode.direction == direction).all()
+    
+    # Фильтруем только корневые узлы (те, у которых нет родителей)
+    root_nodes = []
+    for node in all_nodes:
+        # Проверяем, не является ли этот узел дочерним для какого-либо другого узла
+        is_child = False
+        for other_node in all_nodes:
+            if other_node.children and any(child.id == node.id for child in other_node.children):
+                is_child = True
+                break
+        
+        if not is_child:
+            root_nodes.append(node)
+    
+    return [schemas.RoadmapNodeOut.model_validate(node) for node in root_nodes]
+
+
 def create_node(db: Session, node: schemas.RoadmapNodeCreate) -> schemas.RoadmapNodeOut:
     """
     Creates a new roadmap node and links it to parent nodes if specified.

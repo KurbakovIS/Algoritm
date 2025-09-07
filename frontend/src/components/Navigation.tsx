@@ -75,7 +75,7 @@ export default function Navigation({ onOpenProfessionSelect }: NavigationProps) 
           <div className="flex items-center space-x-3">
             <button 
               onClick={() => navigate('/dashboard')} 
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+              className={`transition-colors ${
                 location.pathname === '/dashboard' 
                   ? 'modern-btn' 
                   : 'glass text-white hover:bg-white/10'
@@ -85,7 +85,7 @@ export default function Navigation({ onOpenProfessionSelect }: NavigationProps) 
             </button>
             <button 
               onClick={() => navigate('/roadmap/career')} 
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+              className={`transition-colors ${
                 location.pathname.startsWith('/roadmap') 
                   ? 'modern-btn' 
                   : 'glass text-white hover:bg-white/10'
@@ -95,13 +95,13 @@ export default function Navigation({ onOpenProfessionSelect }: NavigationProps) 
             </button>
             <button 
               onClick={handleProfessionSelect} 
-              className="glass px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors rounded-lg"
+              className="glass text-white hover:bg-white/10 transition-colors"
             >
               Профессия
             </button>
             <button 
               onClick={handleLogout} 
-              className="glass px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors rounded-lg"
+              className="glass text-white hover:bg-white/10 transition-colors"
             >
               Выйти
             </button>

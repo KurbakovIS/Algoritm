@@ -33,9 +33,9 @@ def get_directions(db: Session = Depends(get_db)):
 @router.get("/directions/{direction}", response_model=List[schemas.RoadmapNodeOut])
 def get_nodes_by_direction(direction: str, db: Session = Depends(get_db)):
     """
-    Get all nodes for a specific direction.
+    Get root nodes for a specific direction with their children hierarchy.
     """
-    nodes = crud.get_nodes_by_direction(db, direction)
+    nodes = crud.get_root_nodes_by_direction(db, direction)
     return nodes
 
 

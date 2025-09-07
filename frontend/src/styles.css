@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tavern aesthetic background */
+body {
+  @apply bg-[radial-gradient(ellipse_at_top_left,_#2b1e1a,_#1a1412)] text-amber-100;
+}
+
+.wood-panel {
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 100%),
+    linear-gradient(180deg, #6b4f2a, #523a20);
+  background-size: 24px 100%, 100% 100%;
+  border: 2px solid #3b2a16;
+  box-shadow: inset 0 6px 12px rgba(0,0,0,0.35), 0 10px 24px rgba(0,0,0,0.7);
+}
+
+.brass-bevel {
+  background: linear-gradient(180deg, #c8a96a, #9b7b42);
+  border: 2px solid #4b3a1e;
+  box-shadow: inset 0 1px rgba(255,255,255,0.25), inset 0 -2px rgba(0,0,0,0.5), 0 8px 14px rgba(0,0,0,0.8);
+}
+
+.chest {
+  @apply wood-panel rounded-xl relative overflow-hidden cursor-pointer select-none;
+}
+
+.chest-lid {
+  background: linear-gradient(180deg, #7a5a31, #4a341d);
+  transform-origin: bottom center;
+}
+
+.card-3d {
+  @apply brass-bevel rounded-xl;
+  transform: translateZ(0);
+}
+
+.card-3d:hover {
+  transform: translateY(-2px) scale(1.02);
+  transition: transform 150ms ease;
+}
+
+.glow-pulse {
+  box-shadow: 0 0 0 0 rgba(255, 210, 125, 0.7);
+  animation: glow 1.6s infinite;
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 0 0 rgba(255, 210, 125, 0.7); }
+  70% { box-shadow: 0 0 20px 14px rgba(255, 210, 125, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 210, 125, 0); }
+}
+

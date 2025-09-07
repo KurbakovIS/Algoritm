@@ -7,7 +7,7 @@ import Topic from './pages/Topic'
 import ProfessionSelect from './components/ProfessionSelect'
 
 function Shell() {
-  const { user } = useApp()
+  const { user, logout } = useApp()
   const [view, setView] = useState<'dashboard'|'roadmap'|'topic'>('dashboard')
   const [direction, setDirection] = useState<string>('frontend')
   const [topicId, setTopicId] = useState<number | null>(null)
@@ -48,7 +48,9 @@ function Shell() {
           <div className="space-x-2">
             <button onClick={()=>setView('dashboard')} className="px-3 py-1 rounded brass-bevel">ЛК</button>
             <button onClick={()=>setView('roadmap')} className="px-3 py-1 rounded brass-bevel">Карта</button>
+            <button onClick={()=>{ setDirection('career'); setView('roadmap') }} className="px-3 py-1 rounded brass-bevel">Сюжет</button>
             <button onClick={()=>setProfOpen(true)} className="px-3 py-1 rounded brass-bevel">Сменить профессию</button>
+            <button onClick={logout} className="px-3 py-1 rounded brass-bevel">Выйти</button>
           </div>
         </nav>
         {view==='dashboard' && <Dashboard onSelect={(dir)=>{ setDirection(dir); setView('roadmap') }} onChangeProfession={()=>setProfOpen(true)} />}

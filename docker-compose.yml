@@ -26,7 +26,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      target: production
     container_name: roadmap-backend
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/roadmap
@@ -55,7 +54,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: production
     container_name: roadmap-frontend
     ports:
       - "80:80"

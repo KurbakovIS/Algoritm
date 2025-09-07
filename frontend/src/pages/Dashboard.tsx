@@ -38,16 +38,16 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
             </div>
           </div>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">{user?.email}</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">{user?.email}</h1>
             <div className="flex items-center gap-4 mb-4">
               <RoleBadge role={user?.role || 'intern'} />
-              <span className="text-gray-600">Уровень {level}</span>
-              <span className="text-gray-600">•</span>
-              <span className="text-gray-600">{user?.xp ?? 0} XP</span>
+              <span className="text-white">Уровень {level}</span>
+              <span className="text-white">•</span>
+              <span className="text-white">{user?.xp ?? 0} XP</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Профессия:</span>
-              <span className="text-sm font-medium text-gray-700">{(localStorage.getItem('profession')||'Не выбрана')}</span>
+              <span className="text-sm text-white">Профессия:</span>
+              <span className="text-sm font-medium text-white">{(localStorage.getItem('profession')||'Не выбрана')}</span>
             </div>
           </div>
         </div>
@@ -59,44 +59,44 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
           <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">{completed}</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Завершено</h3>
-          <p className="text-sm text-gray-600">из {Math.max(total, completed)} тем</p>
+          <h3 className="text-lg font-semibold text-white mb-1">Завершено</h3>
+          <p className="text-sm text-white">из {Math.max(total, completed)} тем</p>
         </div>
 
         <div className="modern-card p-6 text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">{user?.badges?.length || 0}</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Достижения</h3>
-          <p className="text-sm text-gray-600">получено бейджей</p>
+          <h3 className="text-lg font-semibold text-white mb-1">Достижения</h3>
+          <p className="text-sm text-white">получено бейджей</p>
         </div>
 
         <div className="modern-card p-6 text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">{user?.xp ?? 0}</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Опыт</h3>
-          <p className="text-sm text-gray-600">накоплено XP</p>
+          <h3 className="text-lg font-semibold text-white mb-1">Опыт</h3>
+          <p className="text-sm text-white">накоплено XP</p>
         </div>
 
         <div className="modern-card p-6 text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">{Math.round(((completed||0)/Math.max(total||1, completed||1))*100)}%</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Прогресс</h3>
-          <p className="text-sm text-gray-600">общего пути</p>
+          <h3 className="text-lg font-semibold text-white mb-1">Прогресс</h3>
+          <p className="text-sm text-white">общего пути</p>
         </div>
       </div>
 
       {/* Progress Section */}
       <div className="modern-card p-8 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Прогресс обучения</h2>
+        <h2 className="text-2xl font-bold text-white mb-6">Прогресс обучения</h2>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-gray-700">Общий прогресс</span>
-            <span className="text-gray-900 font-semibold">{completed}/{Math.max(total, completed)} тем</span>
+            <span className="text-white">Общий прогресс</span>
+            <span className="text-white font-semibold">{completed}/{Math.max(total, completed)} тем</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-4">
+          <div className="w-full bg-slate-700 rounded-full h-4">
             <div 
               className="bg-gradient-to-r from-blue-500 to-purple-600 h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2" 
               style={{ width: `${Math.min(100, Math.round(((completed||0)/Math.max(total||1, completed||1))*100))}%` }} 
@@ -111,7 +111,7 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
 
       {/* Achievements Section */}
       <div className="modern-card p-8 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Достижения</h2>
+        <h2 className="text-2xl font-bold text-white mb-6">Достижения</h2>
         <div className="flex flex-wrap gap-3">
           {user?.badges?.length ? user.badges.map((b,i)=>(
             <div key={i} className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-full">
@@ -121,8 +121,8 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
           )) : (
             <div className="text-center w-full py-8">
               <div className="text-6xl mb-4">🎯</div>
-              <p className="text-gray-500">Пока нет достижений</p>
-              <p className="text-sm text-gray-400">Продолжайте обучение, чтобы получить первые бейджи!</p>
+              <p className="text-white">Пока нет достижений</p>
+              <p className="text-sm text-white">Продолжайте обучение, чтобы получить первые бейджи!</p>
             </div>
           )}
         </div>
@@ -132,8 +132,8 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="modern-card p-8 text-center">
           <div className="text-4xl mb-4">🗺️</div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">Карьерный роадмап</h3>
-          <p className="text-gray-600 mb-6">Следуйте по пути от джуна до сеньора</p>
+          <h3 className="text-xl font-bold text-white mb-2">Карьерный роадмап</h3>
+          <p className="text-white mb-6">Следуйте по пути от джуна до сеньора</p>
           <button 
             onClick={() => onSelect('career')} 
             className="modern-btn px-6 py-3"
@@ -144,8 +144,8 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
 
         <div className="modern-card p-8 text-center">
           <div className="text-4xl mb-4">⚙️</div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">Настройки профиля</h3>
-          <p className="text-gray-600 mb-6">Измените профессию и настройки</p>
+          <h3 className="text-xl font-bold text-white mb-2">Настройки профиля</h3>
+          <p className="text-white mb-6">Измените профессию и настройки</p>
           <button 
             onClick={onChangeProfession} 
             className="glass px-6 py-3 text-white hover:bg-white/10 transition-colors rounded-lg"

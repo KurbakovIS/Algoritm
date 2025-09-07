@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Auth } from '../api'
 import { useApp } from '../store'
 
@@ -33,23 +33,23 @@ export default function Login({ onSuccess }: { onSuccess: () => void }) {
 
         {/* Login Card */}
         <div className="modern-card p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
             {mode === 'login' ? 'Вход' : 'Регистрация'}
           </h2>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Электронная почта</label>
+              <label className="block text-sm font-medium text-white mb-2">Электронная почта</label>
               <input 
                 className="modern-input w-full" 
-                placeholder="your@email.com" 
+                placeholder="hero@example.com" 
                 value={email} 
                 onChange={e=>setEmail(e.target.value)} 
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Пароль</label>
+              <label className="block text-sm font-medium text-white mb-2">Пароль</label>
               <input 
                 className="modern-input w-full" 
                 type="password" 
@@ -61,7 +61,7 @@ export default function Login({ onSuccess }: { onSuccess: () => void }) {
             
             {mode==='register' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Уровень</label>
+                <label className="block text-sm font-medium text-white mb-2">Уровень</label>
                 <select className="modern-input w-full" value={role} onChange={e=>setRole(e.target.value)}>
                   <option value="intern">Стажёр</option>
                   <option value="junior">Джуниор</option>
@@ -88,7 +88,7 @@ export default function Login({ onSuccess }: { onSuccess: () => void }) {
             <div className="text-center">
               <button 
                 onClick={()=>setMode(mode==='login'?'register':'login')} 
-                className="text-gray-600 hover:text-gray-800 text-sm transition-colors"
+                className="text-white hover:text-gray-200 text-sm transition-colors"
               >
                 {mode==='login'? 'Создать аккаунт' : 'Есть аккаунт? Войти'}
               </button>

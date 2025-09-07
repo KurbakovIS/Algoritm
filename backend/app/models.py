@@ -1,6 +1,15 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean, UniqueConstraint, Table
 from sqlalchemy.orm import relationship
 from .db import Base
+
+
+# Association Table for many-to-many relationship between RoadmapNodes
+roadmap_node_links = Table(
+    'roadmap_node_links',
+    Base.metadata,
+    Column('source_id', Integer, ForeignKey('roadmap_nodes.id'), primary_key=True),
+    Column('target_id', Integer, ForeignKey('roadmap_nodes.id'), primary_key=True)
+)
 
 
 class User(Base):
@@ -22,10 +31,17 @@ class RoadmapNode(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, default="")
     resources = Column(Text, default="[]")  # JSON string
-    parent_id = Column(Integer, ForeignKey("roadmap_nodes.id"), nullable=True)
     checkpoint = Column(Boolean, default=False)
 
-    parent = relationship("RoadmapNode", remote_side=[id])
+    # Many-to-many relationship to self
+    children = relationship(
+        "RoadmapNode",
+        secondary=roadmap_node_links,
+        primaryjoin=id == roadmap_node_links.c.source_id,
+        secondaryjoin=id == roadmap_node_links.c.target_id,
+        backref="parents"
+    )
+
     progresses = relationship("Progress", back_populates="node", cascade="all, delete-orphan")
 
 
@@ -40,4 +56,3 @@ class Progress(Base):
     node = relationship("RoadmapNode", back_populates="progresses")
 
     __table_args__ = (UniqueConstraint("user_id", "node_id", name="uq_progress_user_node"),)
-

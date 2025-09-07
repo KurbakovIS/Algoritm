@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Progress } from '../api';
+import { Progress, Roadmap } from '../api';
 
-// Types
+// --- Types ---
 type Node = {
   id: number;
   title: string;
   description: string;
   checkpoint: boolean;
   resources: string[];
-  parent_id?: number;
   direction: string;
+  children: Node[];
 };
 
-type NodeWithProgress = Node & {
+type NodeWithProgress = Omit<Node, 'children'> & {
+  children: NodeWithProgress[];
   status: 'not_started' | 'in_progress' | 'completed';
   score: number;
 };
@@ -23,96 +24,119 @@ type PositionedNode = NodeWithProgress & {
   isLocked: boolean;
 };
 
-// Helper to get Adventure Icons
+// --- Helper --- 
 const getAdventureIcon = (node: Node) => {
-  if (node.checkpoint) return '🏆'; // Trophy for checkpoints
-  if (node.direction.toLowerCase().includes('backend')) return '⚙️'; // Gear for backend
-  if (node.direction.toLowerCase().includes('frontend')) return '🎨'; // Palette for frontend
-  return '📚'; // Book for general topics
+  if (node.checkpoint) return '🏆';
+  if (node.direction.toLowerCase().includes('backend')) return '⚙️';
+  if (node.direction.toLowerCase().includes('frontend')) return '🎨';
+  return '📚';
 };
 
-export default function VisualRoadmap({ nodes, onOpen }: { nodes: Node[]; onOpen: (id: number) => void }) {
-  const [nodesWithProgress, setNodesWithProgress] = useState<NodeWithProgress[]>([]);
+// --- Component ---
+export default function VisualRoadmap({ onOpen }: { onOpen: (id: number) => void }) {
+  const [nodes, setNodes] = useState<NodeWithProgress[]>([]);
   const [selectedNode, setSelectedNode] = useState<PositionedNode | null>(null);
 
+  // Data Fetching
   useEffect(() => {
-    const loadProgress = async () => {
+    const loadData = async () => {
       try {
-        const progress = await Progress.mine();
+        const [roadmapTree, progress] = await Promise.all([Roadmap.getTree(), Progress.mine()]);
+        
         const progressMap = new Map(progress.map((p: any) => [p.node_id, p]));
-        const nodesWithStatus = nodes.map((node) => ({
-          ...node,
-          status: progressMap.get(node.id)?.status || 'not_started',
-          score: progressMap.get(node.id)?.score || 0,
-        }));
-        setNodesWithProgress(nodesWithStatus);
+
+        const enrichNodesWithProgress = (nodes: Node[]): NodeWithProgress[] => {
+          return nodes.map(node => ({
+            ...node,
+            status: progressMap.get(node.id)?.status || 'not_started',
+            score: progressMap.get(node.id)?.score || 0,
+            children: enrichNodesWithProgress(node.children),
+          }));
+        };
+
+        setNodes(enrichNodesWithProgress(roadmapTree));
+
       } catch (error) {
-        console.error('Failed to load progress:', error);
-        const nodesWithStatus = nodes.map((node) => ({
-          ...node,
-          status: 'not_started' as const,
-          score: 0,
-        }));
-        setNodesWithProgress(nodesWithStatus);
+        console.error('Failed to load roadmap data:', error);
       }
     };
-    if (nodes.length > 0) {
-      loadProgress();
-    }
-  }, [nodes]);
+    loadData();
+  }, []);
 
+  // Positioning Logic
   const positionedNodes = useMemo(() => {
-    if (nodesWithProgress.length === 0) return [];
+    if (nodes.length === 0) return [];
 
     const positioned = new Map<number, PositionedNode>();
-    const nodesById = new Map(nodesWithProgress.map(n => [n.id, n]));
+    const nodesToProcess: { node: NodeWithProgress; x: number; y: number; isLocked: boolean }[] = [];
 
-    const placeNode = (node: NodeWithProgress, x: number, y: number, isLocked: boolean) => {
-      const positionedNode: PositionedNode = { ...node, x, y, isLocked };
-      positioned.set(node.id, positionedNode);
-
-      const children = nodesWithProgress.filter(n => n.parent_id === node.id);
-      const childIsLocked = isLocked || node.status !== 'completed';
-      
-      children.forEach((child, index) => {
-        // Spread children out
-        const newX = x + (index % 2 === 0 ? -150 - (index * 20) : 150 + (index * 20));
-        const newY = y + 120;
-        if (!positioned.has(child.id)) {
-          placeNode(child, newX, newY, childIsLocked);
-        }
+    // Find root nodes (nodes that are not children of any other node)
+    const allNodeIds = new Set<number>();
+    const childNodeIds = new Set<number>();
+    const traverse = (nodes: NodeWithProgress[]) => {
+      nodes.forEach(n => {
+        allNodeIds.add(n.id);
+        n.children.forEach(c => childNodeIds.add(c.id));
+        traverse(n.children);
       });
-    };
+    }
+    traverse(nodes);
+    const rootIds = [...allNodeIds].filter(id => !childNodeIds.has(id));
+    const nodeMap = new Map<number, NodeWithProgress>();
+    const buildMap = (nodes: NodeWithProgress[]) => nodes.forEach(n => { nodeMap.set(n.id, n); buildMap(n.children); });
+    buildMap(nodes);
+    const roots = rootIds.map(id => nodeMap.get(id)!).filter(Boolean);
 
-    const roots = nodesWithProgress.filter(n => !n.parent_id);
     roots.forEach((root, index) => {
-      placeNode(root, (index - (roots.length - 1) / 2) * 300, 50, false);
+      nodesToProcess.push({ node: root, x: (index - (roots.length - 1) / 2) * 400, y: 50, isLocked: false });
     });
 
+    const visited = new Set<number>();
+
+    while (nodesToProcess.length > 0) {
+      const { node, x, y, isLocked } = nodesToProcess.shift()!;
+      if (visited.has(node.id)) continue;
+      visited.add(node.id);
+
+      positioned.set(node.id, { ...node, x, y, isLocked });
+
+      const childIsLocked = isLocked || node.status !== 'completed';
+      node.children.forEach((child, index) => {
+        const angle = (index / (node.children.length -1) || 0) * Math.PI * 0.6 - Math.PI * 0.3;
+        const newX = x + Math.sin(angle) * 250;
+        const newY = y + Math.cos(angle) * 150;
+        nodesToProcess.push({ node: child, x: newX, y: newY, isLocked: childIsLocked });
+      });
+    }
+
     return Array.from(positioned.values());
-  }, [nodesWithProgress]);
+  }, [nodes]);
 
   const connections = useMemo(() => {
     const lines: { x1: number; y1: number; x2: number; y2: number; isCompleted: boolean }[] = [];
     const nodesMap = new Map(positionedNodes.map(n => [n.id, n]));
 
     positionedNodes.forEach(node => {
-      if (node.parent_id && nodesMap.has(node.parent_id)) {
-        const parent = nodesMap.get(node.parent_id)!;
-        lines.push({
-          x1: parent.x,
-          y1: parent.y,
-          x2: node.x,
-          y2: node.y,
-          isCompleted: parent.status === 'completed' && !node.isLocked
-        });
-      }
+      node.children.forEach(child => {
+        if (nodesMap.has(child.id)) {
+          const childNode = nodesMap.get(child.id)!;
+          lines.push({
+            x1: node.x,
+            y1: node.y,
+            x2: childNode.x,
+            y2: childNode.y,
+            isCompleted: node.status === 'completed' && !childNode.isLocked,
+          });
+        }
+      });
     });
     return lines;
   }, [positionedNodes]);
 
+  // --- Render ---
+  // The rest of the component remains largely the same...
   const mapDimensions = useMemo(() => {
-    if (positionedNodes.length === 0) return { width: 1200, height: 800 };
+    if (positionedNodes.length === 0) return { width: 1200, height: 800, offsetX: 0, offsetY: 0 };
     const xs = positionedNodes.map(n => n.x);
     const ys = positionedNodes.map(n => n.y);
     const minX = Math.min(...xs);
@@ -120,7 +144,7 @@ export default function VisualRoadmap({ nodes, onOpen }: { nodes: Node[]; onOpen
     const minY = Math.min(...ys);
     const maxY = Math.max(...ys);
     return {
-      width: maxX - minX + 300, // Add padding
+      width: maxX - minX + 300,
       height: maxY - minY + 200,
       offsetX: -minX + 150,
       offsetY: -minY + 100,

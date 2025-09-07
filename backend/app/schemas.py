@@ -30,14 +30,23 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class RoadmapNodeOut(BaseModel):
-    id: int
-    direction: str
+# --- Roadmap Schemas ---
+
+class RoadmapNodeBase(BaseModel):
     title: str
-    description: str
-    resources: List[str]
-    parent_id: Optional[int]
-    checkpoint: bool
+    description: Optional[str] = ""
+    direction: str
+    resources: List[str] = []
+    checkpoint: bool = False
+
+
+class RoadmapNodeCreate(RoadmapNodeBase):
+    parent_ids: Optional[List[int]] = []
+
+
+class RoadmapNodeOut(RoadmapNodeBase):
+    id: int
+    children: List['RoadmapNodeOut'] = []
 
     model_config = {
         "from_attributes": True
@@ -59,4 +68,3 @@ class ProgressOut(BaseModel):
     model_config = {
         "from_attributes": True
     }
-

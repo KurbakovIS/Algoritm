@@ -1,13 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
+from .settings import settings
 
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    # Example: postgresql+psycopg2://user:pass@localhost:5432/roadmap
-    "sqlite:///./dev.db",  # fallback for quick local run
-)
+DATABASE_URL = settings.database_url
 
 engine = create_engine(
     DATABASE_URL,
@@ -25,4 +22,3 @@ def get_db():
         yield db
     finally:
         db.close()
-

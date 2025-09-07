@@ -25,9 +25,7 @@ export const Auth = {
 }
 
 export const Roadmap = {
-  directions() { return api('/roadmap/directions') },
-  byDirection(dir: string) { return api(`/roadmap/${dir}`) },
-  node(id: number) { return api(`/roadmap/node/${id}`) }
+  getTree() { return api('/roadmap/') },
 }
 
 export const Progress = {
@@ -36,4 +34,3 @@ export const Progress = {
   },
   mine() { return api('/progress/mine') }
 }
-

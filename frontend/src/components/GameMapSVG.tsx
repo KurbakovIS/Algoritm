@@ -18,9 +18,63 @@ const GameMapSVG: React.FC<GameMapSVGProps> = ({ direction, onOpen }) => {
     const loadRoadmapData = async () => {
       try {
         setLoading(true);
-        const roadmapData = await Roadmap.getRoadmap();
-        console.log('Loaded roadmap data:', roadmapData);
-        setNodes(roadmapData);
+        
+        // Тестовые данные для проверки отображения
+        const testNodes = [
+          {
+            id: 1,
+            title: "Frontend Adventurer",
+            description: "Start your quest in the realms of HTML/CSS/JS.",
+            checkpoint: false,
+            resources: "[\"https://developer.mozilla.org\"]",
+            direction: "frontend",
+            children: [
+              {
+                id: 2,
+                title: "HTML & Semantics",
+                description: "Structure pages with meaning.",
+                checkpoint: true,
+                resources: "[\"https://web.dev/learn/html/\"]",
+                direction: "frontend",
+                children: []
+              }
+            ]
+          },
+          {
+            id: 13,
+            title: "Junior Developer",
+            description: "Начальный уровень разработчика.",
+            checkpoint: false,
+            resources: "[\"https://roadmap.sh/\"]",
+            direction: "career",
+            children: [
+              {
+                id: 14,
+                title: "Junior Developer",
+                description: "Основы программирования.",
+                checkpoint: true,
+                resources: "[\"https://github.com/kamranahmedse/developer-roadmap\"]",
+                direction: "career",
+                children: []
+              }
+            ]
+          }
+        ];
+        
+        console.log('Using test nodes:', testNodes);
+        setNodes(testNodes);
+        
+        // Попробуем также загрузить реальные данные
+        try {
+          const roadmapData = await Roadmap.getTree();
+          console.log('Loaded roadmap data from API:', roadmapData);
+          console.log('Roadmap data type:', typeof roadmapData);
+          console.log('Roadmap data length:', roadmapData?.length);
+          // setNodes(roadmapData || []);
+        } catch (apiError) {
+          console.error('API error:', apiError);
+        }
+        
       } catch (error) {
         console.error('Failed to load roadmap data:', error);
       } finally {
@@ -66,7 +120,27 @@ const GameMapSVG: React.FC<GameMapSVGProps> = ({ direction, onOpen }) => {
         {/* Многослойный фон */}
         <BackgroundLayers width={dimensions.width} height={dimensions.height} />
         
+        {/* Тестовый узел для проверки */}
+        <circle
+          cx={200}
+          cy={200}
+          r={30}
+          fill="#ff0000"
+          stroke="#000000"
+          strokeWidth="2"
+        />
+        <text
+          x={200}
+          y={250}
+          textAnchor="middle"
+          fontSize="12"
+          fill="#000000"
+        >
+          Test Node
+        </text>
+        
         {/* Визуализация роадмапа */}
+        {console.log('GameMapSVG rendering with nodes:', nodes)}
         <RoadmapVisualization
           width={dimensions.width}
           height={dimensions.height}

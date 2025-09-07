@@ -81,7 +81,10 @@ const RoadmapVisualization: React.FC<RoadmapVisualizationProps> = ({
   };
 
   useEffect(() => {
+    console.log('RoadmapVisualization received nodes:', nodes);
+    console.log('Nodes length:', nodes?.length);
     const positions = calculateNodePositions(nodes, 150, 100);
+    console.log('Calculated positions:', positions);
     setNodePositions(positions);
   }, [nodes, width, height]);
 
@@ -112,6 +115,8 @@ const RoadmapVisualization: React.FC<RoadmapVisualizationProps> = ({
     return connections;
   };
 
+  console.log('Rendering RoadmapVisualization with', nodePositions.length, 'positions');
+  
   return (
     <g>
       {/* Связи между узлами */}

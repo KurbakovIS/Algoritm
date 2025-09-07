@@ -54,6 +54,7 @@ export const Auth = {
 
 export const Roadmap = {
   getTree() { return api('/roadmap/') },
+  getRoadmap() { return api('/roadmap/') }, // Алиас для совместимости
   async byDirection(direction: string) { 
     return api(`/roadmap/directions/${direction}`) 
   },

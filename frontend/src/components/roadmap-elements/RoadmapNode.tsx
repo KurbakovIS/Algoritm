@@ -72,6 +72,22 @@ const RoadmapNode: React.FC<RoadmapNodeProps> = ({
         width={nodeSize - 16}
         height={nodeSize - 16}
         preserveAspectRatio="xMidYMid meet"
+        onError={(e) => {
+          console.error('Failed to load image:', nodeImage);
+          // Fallback к простому кругу
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+      
+      {/* Fallback - простой круг если изображение не загрузилось */}
+      <circle
+        cx={x}
+        cy={y}
+        r={nodeSize/2 - 8}
+        fill="#ffd700"
+        opacity="0.8"
+        style={{ display: 'none' }}
+        id={`fallback-${x}-${y}`}
       />
       
       {/* Чекпоинт индикатор */}

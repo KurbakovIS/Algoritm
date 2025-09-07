@@ -1,0 +1,29 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="backendGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2aa84a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e7e34;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Фон -->
+  <circle cx="40" cy="40" r="38" fill="url(#backendGrad)" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- Сервер -->
+  <rect x="25" y="20" width="30" height="40" rx="3" fill="#ffffff" opacity="0.9"/>
+  <rect x="27" y="22" width="26" height="3" rx="1" fill="#2aa84a"/>
+  <rect x="27" y="27" width="26" height="3" rx="1" fill="#2aa84a"/>
+  <rect x="27" y="32" width="26" height="3" rx="1" fill="#2aa84a"/>
+  <rect x="27" y="37" width="26" height="3" rx="1" fill="#2aa84a"/>
+  <rect x="27" y="42" width="26" height="3" rx="1" fill="#2aa84a"/>
+  <rect x="27" y="47" width="26" height="3" rx="1" fill="#2aa84a"/>
+  
+  <!-- Светодиоды -->
+  <circle cx="32" cy="55" r="2" fill="#00ff00"/>
+  <circle cx="40" cy="55" r="2" fill="#ffff00"/>
+  <circle cx="48" cy="55" r="2" fill="#ff0000"/>
+  
+  <!-- Кабели -->
+  <path d="M20 30 Q15 25 10 30" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <path d="M60 30 Q65 25 70 30" stroke="#ffffff" stroke-width="2" fill="none"/>
+</svg>

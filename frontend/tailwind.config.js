@@ -15,6 +15,8 @@ module.exports = {
         'geist': ['Geist', 'sans-serif'],
         'geist-mono': ['Geist Mono', 'monospace'],
         'pacifico': ['Pacifico', 'cursive'],
+        'montserrat': ['Montserrat', 'sans-serif'],
+        'roboto': ['Roboto', 'sans-serif'],
       },
       boxShadow: {
         deep: "inset 0 2px 6px rgba(0,0,0,0.6), 0 6px 16px rgba(0,0,0,0.6)",

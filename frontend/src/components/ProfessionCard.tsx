@@ -12,6 +12,18 @@ type Props = {
 }
 
 export default function ProfessionCard({ id, title, level, accent, subtitle, description, stats = [], onPick }: Props) {
+  const getHeroIcon = (professionId: string) => {
+    const iconMap: { [key: string]: string } = {
+      'backend': '/heroes/backend-hero.svg',
+      'frontend': '/heroes/frontend-hero.svg',
+      'fullstack': '/heroes/fullstack-hero.svg',
+      'devops': '/heroes/devops-hero.svg',
+      'mobile': '/heroes/mobile-hero.svg',
+      'data-ml': '/heroes/data-ml-hero.svg'
+    }
+    return iconMap[professionId] || '/heroes/backend-hero.svg'
+  }
+
   return (
     <div 
       className="modern-card p-6 cursor-pointer hover:scale-105 transition-all duration-300 hover:shadow-xl" 
@@ -19,19 +31,28 @@ export default function ProfessionCard({ id, title, level, accent, subtitle, des
       style={{ borderTop: `4px solid ${accent}` }}
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ background: accent }}>
-          {level}
+        <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden" style={{ background: accent }}>
+          <img 
+            src={getHeroIcon(id)} 
+            alt={`${title} герой`}
+            className="w-12 h-12 object-contain"
+          />
         </div>
-        <div className="w-3 h-3 rounded-full" style={{ background: accent }}></div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full" style={{ background: accent }}></div>
+          <span className="text-sm font-bold text-white px-2 py-1 rounded-full" style={{ background: accent }}>
+            {level}
+          </span>
+        </div>
       </div>
 
       <div className="text-center mb-4">
-        <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
-        <p className="text-sm font-medium text-gray-600">{subtitle}</p>
+        <h3 className="text-xl font-bold text-white mb-2 font-montserrat">{title}</h3>
+        <p className="text-sm font-medium text-gray-200">{subtitle}</p>
       </div>
 
       <div className="mb-4">
-        <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+        <p className="text-gray-200 text-sm leading-relaxed">{description}</p>
       </div>
 
       {stats.length > 0 && (

@@ -53,8 +53,8 @@ export default function ProfessionSelect({ open, onClose, onPick }: { open: bool
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative max-w-6xl mx-auto">
         <div className="modern-card p-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Выберите профессию</h2>
-          <p className="text-gray-600 text-center mb-8">Выберите направление развития, которое вас интересует</p>
+          <h2 className="text-3xl font-bold text-white mb-6 text-center font-montserrat">Выберите профессию</h2>
+          <p className="text-gray-200 text-center mb-8">Выберите направление развития, которое вас интересует</p>
           
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

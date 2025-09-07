@@ -11,6 +11,11 @@ module.exports = {
           glow: "#ffd27d"
         }
       },
+      fontFamily: {
+        'geist': ['Geist', 'sans-serif'],
+        'geist-mono': ['Geist Mono', 'monospace'],
+        'pacifico': ['Pacifico', 'cursive'],
+      },
       boxShadow: {
         deep: "inset 0 2px 6px rgba(0,0,0,0.6), 0 6px 16px rgba(0,0,0,0.6)",
         bevel: "inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 0 rgba(0,0,0,0.4), 0 8px 14px rgba(0,0,0,0.75)"
@@ -40,4 +45,3 @@ module.exports = {
   },
   plugins: [],
 }
-

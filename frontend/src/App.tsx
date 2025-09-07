@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AppProvider, useApp } from './store'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -27,13 +27,8 @@ function Shell() {
 
   function pickProfession(id: string) {
     localStorage.setItem('profession', id)
-    // Map profession to direction names used by backend
-    const map: Record<string, string> = {
-      backend: 'backend', frontend: 'frontend', devops: 'devops',
-      fullstack: 'frontend', mobile: 'frontend', 'data-ml': 'backend'
-    }
-    const dir = map[id] || 'frontend'
-    setDirection(dir)
+    // Все профессии ведут к карьерному роадмапу
+    setDirection('career')
     setProfOpen(false)
     setView('roadmap')
   }
@@ -42,17 +37,46 @@ function Shell() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto p-6">
-        <nav className="flex items-center justify-between mb-6">
-          <div className="text-2xl font-black text-amber-200">Tavern Roadmap</div>
-          <div className="space-x-2">
-            <button onClick={()=>setView('dashboard')} className="px-3 py-1 rounded brass-bevel">ЛК</button>
-            <button onClick={()=>setView('roadmap')} className="px-3 py-1 rounded brass-bevel">Карта</button>
-            <button onClick={()=>{ setDirection('career'); setView('roadmap') }} className="px-3 py-1 rounded brass-bevel">Сюжет</button>
-            <button onClick={()=>setProfOpen(true)} className="px-3 py-1 rounded brass-bevel">Сменить профессию</button>
-            <button onClick={logout} className="px-3 py-1 rounded brass-bevel">Выйти</button>
+      {/* Modern Navigation */}
+      <nav className="glass border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold gradient-text">DevAcademy</h1>
+              <span className="text-white/60 text-sm">Портал развития разработчиков</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={()=>setView('dashboard')} 
+                className="modern-btn px-4 py-2 text-sm"
+              >
+                Личный кабинет
+              </button>
+              <button 
+                onClick={()=>{ setDirection('career'); setView('roadmap') }} 
+                className="modern-btn px-4 py-2 text-sm"
+              >
+                Роадмап
+              </button>
+              <button 
+                onClick={()=>setProfOpen(true)} 
+                className="glass px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors rounded-lg"
+              >
+                Профессия
+              </button>
+              <button 
+                onClick={logout} 
+                className="glass px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors rounded-lg"
+              >
+                Выйти
+              </button>
+            </div>
           </div>
-        </nav>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6">
         {view==='dashboard' && <Dashboard onSelect={(dir)=>{ setDirection(dir); setView('roadmap') }} onChangeProfession={()=>setProfOpen(true)} />}
         {view==='roadmap' && <RoadmapPage direction={direction} onOpen={(id)=>{ setTopicId(id); setView('topic') }} />}
         {view==='topic' && topicId!=null && <Topic id={topicId} onBack={()=>setView('roadmap')} />}

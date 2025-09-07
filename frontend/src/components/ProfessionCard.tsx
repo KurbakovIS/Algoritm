@@ -7,11 +7,12 @@ type Props = {
   accent: string
   subtitle: string
   description: string
+  is_active: boolean
   stats?: { label: string, value: number, color: string }[]
   onPick: (id: string) => void
 }
 
-export default function ProfessionCard({ id, title, level, accent, subtitle, description, stats = [], onPick }: Props) {
+export default function ProfessionCard({ id, title, level, accent, subtitle, description, is_active, stats = [], onPick }: Props) {
   const getHeroIcon = (professionId: string) => {
     const iconMap: { [key: string]: string } = {
       'backend': '/heroes/backend-hero.svg',
@@ -24,14 +25,24 @@ export default function ProfessionCard({ id, title, level, accent, subtitle, des
     return iconMap[professionId] || '/heroes/backend-hero.svg'
   }
 
+  const handleClick = () => {
+    if (is_active) {
+      onPick(id)
+    }
+  }
+
   return (
     <div 
-      className="modern-card p-6 cursor-pointer hover:scale-105 transition-all duration-300 hover:shadow-xl" 
-      onClick={() => onPick(id)}
-      style={{ borderTop: `4px solid ${accent}` }}
+      className={`modern-card p-6 transition-all duration-300 ${
+        is_active 
+          ? 'cursor-pointer hover:scale-105 hover:shadow-xl' 
+          : 'cursor-not-allowed opacity-50 grayscale'
+      }`}
+      onClick={handleClick}
+      style={{ borderTop: `4px solid ${is_active ? accent : '#6b7280'}` }}
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden" style={{ background: accent }}>
+        <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden" style={{ background: is_active ? accent : '#6b7280' }}>
           <img 
             src={getHeroIcon(id)} 
             alt={`${title} герой`}
@@ -39,8 +50,8 @@ export default function ProfessionCard({ id, title, level, accent, subtitle, des
           />
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ background: accent }}></div>
-          <span className="text-sm font-bold text-white px-2 py-1 rounded-full" style={{ background: accent }}>
+          <div className="w-3 h-3 rounded-full" style={{ background: is_active ? accent : '#6b7280' }}></div>
+          <span className="text-sm font-bold text-white px-2 py-1 rounded-full" style={{ background: is_active ? accent : '#6b7280' }}>
             {level}
           </span>
         </div>
@@ -67,8 +78,8 @@ export default function ProfessionCard({ id, title, level, accent, subtitle, des
       )}
 
       <div className="mt-4 text-center">
-        <div className="inline-flex items-center text-sm font-medium" style={{ color: accent }}>
-          Выбрать профессию →
+        <div className="inline-flex items-center text-sm font-medium" style={{ color: is_active ? accent : '#6b7280' }}>
+          {is_active ? 'Выбрать профессию →' : 'Недоступно'}
         </div>
       </div>
     </div>

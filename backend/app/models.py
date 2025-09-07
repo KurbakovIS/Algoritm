@@ -45,6 +45,17 @@ class RoadmapNode(Base):
     progresses = relationship("Progress", back_populates="node", cascade="all, delete-orphan")
 
 
+class Profession(Base):
+    __tablename__ = "professions"
+    id = Column(String(50), primary_key=True, index=True)  # backend, frontend, etc.
+    title = Column(String(255), nullable=False)
+    level = Column(Integer, nullable=False)
+    accent = Column(String(7), nullable=False)  # hex color
+    subtitle = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+
+
 class Progress(Base):
     __tablename__ = "progress"
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)

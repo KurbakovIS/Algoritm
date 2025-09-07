@@ -109,61 +109,45 @@ def get_team_stats(db: Session) -> schemas.TeamStats:
     )
 
 
-def get_professions() -> List[schemas.ProfessionOut]:
+def get_professions(db: Session) -> List[schemas.ProfessionOut]:
     """
-    Get available professions/directions.
+    Get available professions/directions from database.
     """
-    professions = [
-        schemas.ProfessionOut(
-            id="backend",
-            title="Backend",
-            level=3,
-            accent="#2aa84a",
-            subtitle="Серверный Разработчик",
-            description="Создаёте серверную логику, API и базы данных."
-        ),
-        schemas.ProfessionOut(
-            id="frontend",
-            title="Frontend",
-            level=3,
-            accent="#ff7b00",
-            subtitle="Фронтенд Разработчик",
-            description="Создаёте интерфейсы и отличный UX."
-        ),
-        schemas.ProfessionOut(
-            id="fullstack",
-            title="Fullstack",
-            level=5,
-            accent="#7b5cff",
-            subtitle="Универсальный Разработчик",
-            description="От фронта до бэка — полный стек."
-        ),
-        schemas.ProfessionOut(
-            id="devops",
-            title="DevOps",
-            level=5,
-            accent="#00b2ff",
-            subtitle="Инженер Инфраструктуры",
-            description="CI/CD, контейнеры и стабильность."
-        ),
-        schemas.ProfessionOut(
-            id="mobile",
-            title="Mobile",
-            level=4,
-            accent="#ff3b7f",
-            subtitle="Мобильный Разработчик",
-            description="iOS/Android и мобильный UX."
-        ),
-        schemas.ProfessionOut(
-            id="data-ml",
-            title="Data/ML",
-            level=7,
-            accent="#f2b705",
-            subtitle="Инженер Данных и ИИ",
-            description="ML-модели и инсайты из данных."
-        ),
-    ]
-    return professions
+    professions = db.query(models.Profession).all()
+    return [schemas.ProfessionOut.model_validate(profession) for profession in professions]
+
+
+def create_profession(db: Session, profession: schemas.ProfessionOut) -> schemas.ProfessionOut:
+    """
+    Create a new profession.
+    """
+    db_profession = models.Profession(
+        id=profession.id,
+        title=profession.title,
+        level=profession.level,
+        accent=profession.accent,
+        subtitle=profession.subtitle,
+        description=profession.description,
+        is_active=profession.is_active
+    )
+    db.add(db_profession)
+    db.commit()
+    db.refresh(db_profession)
+    return schemas.ProfessionOut.model_validate(db_profession)
+
+
+def update_profession_status(db: Session, profession_id: str, is_active: bool) -> schemas.ProfessionOut:
+    """
+    Update profession active status.
+    """
+    profession = db.query(models.Profession).filter(models.Profession.id == profession_id).first()
+    if not profession:
+        raise ValueError("Profession not found")
+    
+    profession.is_active = is_active
+    db.commit()
+    db.refresh(profession)
+    return schemas.ProfessionOut.model_validate(profession)
 
 
 def get_corporate_dashboard(db: Session) -> schemas.CorporateDashboard:

@@ -116,6 +116,11 @@ class ProfessionOut(BaseModel):
     accent: str
     subtitle: str
     description: str
+    is_active: bool
+
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class CorporateDashboard(BaseModel):

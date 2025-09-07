@@ -22,8 +22,8 @@ def get_team_stats(db: Session = Depends(get_db)):
 
 
 @router.get("/professions", response_model=List[schemas.ProfessionOut])
-def get_professions():
+def get_professions(db: Session = Depends(get_db)):
     """
     Get available professions/directions.
     """
-    return crud.get_professions()
+    return crud.get_professions(db)

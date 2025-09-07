@@ -8,6 +8,7 @@ body {
   min-height: 100vh;
   color: #ffffff;
   font-family: 'Geist', sans-serif;
+  overflow-x: hidden; /* Предотвращаем горизонтальный скролл */
 }
 
 /* Glass morphism effect */
@@ -20,7 +21,7 @@ body {
 
 .glass:hover {
   opacity: 0.8;
-  transform: scale(1.01);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.5);
   transition: all 0.3s ease;
 }
 
@@ -34,7 +35,7 @@ body {
 }
 
 .modern-card:hover {
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-2px);
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 }
 
@@ -113,7 +114,7 @@ body {
 }
 
 .card-3d:hover {
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-2px);
   transition: transform 150ms ease;
 }
 
@@ -168,7 +169,7 @@ body {
   will-change: transform;
 }
 .booster-tilt:hover {
-  transform: translateY(-6px) rotateX(2deg) rotateY(-2deg) scale(1.02);
+  transform: translateY(-6px) rotateX(2deg) rotateY(-2deg);
   box-shadow: 0 22px 40px rgba(0,0,0,0.8);
 }
 
@@ -208,11 +209,7 @@ body {
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
 }
 
-/* Enhanced card hover effects */
-.modern-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-}
+/* Enhanced card hover effects - стиль уже определен выше */
 
 /* Progress bar animations */
 .progress-bar {
@@ -229,6 +226,6 @@ body {
 }
 
 .achievement-badge:hover {
-  transform: scale(1.05);
+  transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(251, 191, 36, 0.6);
 }

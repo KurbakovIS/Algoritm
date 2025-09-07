@@ -3,7 +3,7 @@ import RoleBadge from '../components/RoleBadge'
 import { useApp } from '../store'
 import Avatar from '../components/Avatar'
 import { useEffect, useMemo, useState } from 'react'
-import { Progress, Roadmap } from '../api'
+import { Progress, Roadmap, User } from '../api'
 
 export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: (dir: string) => void, onChangeProfession: () => void }) {
   const { user } = useApp()
@@ -11,16 +11,22 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [userSettings, setUserSettings] = useState<{ profession?: string } | null>(null)
 
   useEffect(() => { (async () => {
     try {
       setLoading(true)
       setError(null)
-      const mine = await Progress.mine()
+      
+      const [mine, allNodes, settings] = await Promise.all([
+        Progress.mine(),
+        Roadmap.getTree(),
+        User.getSettings().catch(() => ({ profession: localStorage.getItem('profession') || 'Не выбрана' }))
+      ])
+      
       setCompleted(mine.filter((m: any) => m.status === 'completed').length)
-      // Получаем общее количество узлов из всех направлений
-      const allNodes = await Roadmap.getTree()
       setTotal(allNodes.length)
+      setUserSettings(settings)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки данных')
     } finally {
@@ -86,7 +92,9 @@ export default function Dashboard({ onSelect, onChangeProfession }: { onSelect: 
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-white">Профессия:</span>
-              <span className="text-sm font-medium text-white">{(localStorage.getItem('profession')||'Не выбрана')}</span>
+              <span className="text-sm font-medium text-white">
+                {userSettings?.profession || localStorage.getItem('profession') || 'Не выбрана'}
+              </span>
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import RoadmapPage from './pages/Roadmap'
 import Topic from './pages/Topic'
 import ProfessionSelect from './components/ProfessionSelect'
+import { User } from './api'
 
 function Shell() {
   const { user, logout } = useApp()
@@ -26,8 +27,17 @@ function Shell() {
     }
   }, [user])
 
-  function pickProfession(id: string) {
-    localStorage.setItem('profession', id)
+  async function pickProfession(id: string) {
+    try {
+      // Сохраняем профессию в API
+      await User.updateSettings({ profession: id })
+      localStorage.setItem('profession', id)
+    } catch (err) {
+      console.error('Ошибка сохранения профессии:', err)
+      // Fallback к localStorage
+      localStorage.setItem('profession', id)
+    }
+    
     // Все профессии ведут к карьерному роадмапу
     setDirection('career')
     setProfOpen(false)

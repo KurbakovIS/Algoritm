@@ -5,7 +5,7 @@ from typing import List, Optional, Literal
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=100)
-    role: str = Field(default="intern", regex="^(intern|junior|middle|senior|lead)$")
+    role: str = Field(default="intern", pattern="^(intern|junior|middle|senior|lead)$")
     
     @validator('password')
     def validate_password(cls, v):
